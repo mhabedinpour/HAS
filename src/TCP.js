@@ -1,0 +1,190 @@
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var events_1 = require("events");
+var NET = require("net");
+var ChaCha = require("./encryption/ChaCha20Poly1305AEAD");
+var delimiter = Buffer.from('\r\n');
+var TCP = (function (_super) {
+    __extends(TCP, _super);
+    function TCP(server) {
+        var _this = _super.call(this) || this;
+        _this.TCPConnectionPool = [];
+        _this.TCPConnectionPoolMax = 8;
+        _this.connections = {};
+        _this.server = server;
+        _this.TCPServer = NET.createServer();
+        _this.connections = [];
+        return _this;
+    }
+    TCP.prototype.listen = function (TCPPort, HTTPPort) {
+        var _this = this;
+        this.TCPPort = TCPPort;
+        this.HTTPPort = HTTPPort;
+        this.TCPServer.listen(this.TCPPort);
+        this.TCPServer.on('listening', function () {
+            _this.emit('listening', _this.TCPPort);
+        });
+        this.TCPServer.on('error', function (error) {
+            console.error(error);
+        });
+        this.TCPServer.on('connection', this.onConnection.bind(this));
+        for (var i = 0; i < this.TCPConnectionPoolMax; i++)
+            this.createNewConnection();
+    };
+    TCP.prototype.onConnection = function (socket) {
+        var _this = this;
+        socket.ID = "" + new Date().getTime() + Math.floor(Math.random() * 1000);
+        this.connections[socket.ID] = socket;
+        socket.on('close', function () {
+            delete _this.connections[socket.ID];
+            if (_this.server.config.SRP && _this.server.config.SRP.socketID === socket.ID) {
+                _this.server.config.SRP = undefined;
+                _this.server.config.lastPairStepTime = undefined;
+            }
+            socket.end();
+            socket.destroy();
+        });
+        socket.on('data', function (data) {
+            if (socket.isEncrypted) {
+                socket.hasReceivedEncryptedData = true;
+                var result = Buffer.alloc(0);
+                for (var index = 0; index < data.length;) {
+                    var AAD = data.slice(index, index + 2), length_1 = AAD.readUInt16LE(0), encryptedData = data.slice(index + 2, index + 2 + length_1), tag = data.slice(index + 2 + length_1, index + 2 + length_1 + 16), nonce = Buffer.alloc(12), decrypted = ChaCha.expertDecrypt(socket.HAPEncryption.controllerToAccessoryKey, nonce, tag, encryptedData, AAD);
+                    if (decrypted) {
+                        result = Buffer.concat([result, decrypted]);
+                        index += index + 2 + length_1 + 16;
+                    }
+                    else {
+                        socket.emit('close');
+                        return;
+                    }
+                }
+                data = result;
+            }
+            var _a = _this.readAndDeleteFirstLineOfBuffer(data), firstLine = _a.firstLine, rest = _a.rest;
+            _this.write(Buffer.concat([firstLine, delimiter, Buffer.from("X-Real-Socket-ID: " + socket.ID, 'ascii'), delimiter, rest]));
+        });
+        socket.setTimeout(3600000);
+        socket.on('timeout', function () {
+            socket.emit('close');
+        });
+        socket.keepAliveForEver = function () {
+            socket.setTimeout(0);
+            socket.setKeepAlive(true, 1800000);
+        };
+        socket.safeWrite = function (buffer) {
+            if (socket.hasReceivedEncryptedData) {
+                var result = Buffer.alloc(0), nonce = Buffer.alloc(12);
+                for (var index = 0; index < buffer.length;) {
+                    var length_2 = Math.min(buffer.length - index, 1024), lengthBuffer = Buffer.alloc(2);
+                    lengthBuffer.writeUInt16LE(length_2, 0);
+                    var enceypted = ChaCha.expertEncrypt(socket.HAPEncryption.accessoryToControllerKey, nonce, buffer.slice(index, index + length_2), lengthBuffer);
+                    result = Buffer.concat([result, lengthBuffer, enceypted]);
+                    index += length_2;
+                }
+                buffer = result;
+            }
+            socket.write(buffer);
+        };
+        socket.on('error', function () {
+        });
+    };
+    TCP.prototype.write = function (buffer) {
+        var wrote = false;
+        for (var _i = 0, _a = this.TCPConnectionPool; _i < _a.length; _i++) {
+            var connection = _a[_i];
+            if (!connection.isBusy) {
+                connection.safeWrite(buffer);
+                wrote = true;
+                break;
+            }
+        }
+        if (!wrote)
+            this.createNewConnection().safeWrite(buffer);
+    };
+    TCP.prototype.hasExtraOpenConnection = function () {
+        if (this.TCPConnectionPool.length > this.TCPConnectionPoolMax && this.TCPConnectionPool.filter(function (connection) { return !connection.isBusy; }).length >= 1)
+            return true;
+        return false;
+    };
+    TCP.prototype.createNewConnection = function () {
+        var _this = this;
+        var connection = NET.createConnection(this.HTTPPort);
+        connection.on('connect', function () {
+            connection.isConnected = true;
+            if (connection.pendingWirte) {
+                connection.safeWrite(connection.pendingWirte);
+                delete connection.pendingWirte;
+            }
+        });
+        connection.on('error', function () {
+            connection.emit('close');
+        });
+        connection.on('close', function () {
+            _this.TCPConnectionPool.splice(_this.TCPConnectionPool.indexOf(connection), 1);
+            connection.end();
+            connection.destroy();
+        });
+        connection.on('data', function (data) {
+            var currentLine = '', prevs = Buffer.alloc(0), rests = data;
+            while (true) {
+                var _a = _this.readAndDeleteFirstLineOfBuffer(rests), firstLine = _a.firstLine, rest = _a.rest;
+                currentLine = firstLine.toString('utf8');
+                rests = rest;
+                if (currentLine.indexOf('X-Real-Socket-ID') > -1)
+                    break;
+                else
+                    prevs = Buffer.concat([prevs, delimiter, firstLine]);
+                if (firstLine.length === 0)
+                    break;
+            }
+            var socketID = (currentLine.split(':')[1]).trim();
+            if (_this.connections[socketID])
+                _this.connections[socketID].safeWrite(Buffer.concat([prevs, delimiter, rests]));
+            connection.isBusy = false;
+            if (_this.hasExtraOpenConnection())
+                connection.emit('close');
+        });
+        connection.safeWrite = function (buffer) {
+            connection.isBusy = true;
+            if (connection.isConnected)
+                connection.write(buffer);
+            else {
+                connection.pendingWrite = connection.pendingWrite || Buffer.alloc(0);
+                connection.pendingWrite = Buffer.concat([connection.pendingWrite, buffer]);
+            }
+        };
+        this.TCPConnectionPool.push(connection);
+        return connection;
+    };
+    TCP.prototype.readAndDeleteFirstLineOfBuffer = function (buffer) {
+        var firstLine = Buffer.alloc(0);
+        for (var index = 0; index < buffer.length; index++) {
+            if (buffer[index] == delimiter[0] && buffer[index + 1] == delimiter[1])
+                break;
+            else
+                firstLine = Buffer.concat([firstLine, buffer.slice(index, index + 1)]);
+        }
+        return { firstLine: firstLine, rest: buffer.slice(firstLine.length + delimiter.length) };
+    };
+    TCP.prototype.close = function () {
+        this.connections = [];
+        this.TCPServer.close();
+        for (var _i = 0, _a = this.TCPConnectionPool; _i < _a.length; _i++) {
+            var connection = _a[_i];
+            connection.emit('close');
+        }
+    };
+    return TCP;
+}(events_1.EventEmitter));
+exports.default = TCP;
