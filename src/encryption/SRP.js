@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", {value: true});
+Object.defineProperty(exports, "__esModule", { value: true });
 var crypto = require("crypto");
 var BigInteger = require('jsbn').BigInteger;
 var SRP = (function () {
@@ -17,7 +17,6 @@ var SRP = (function () {
         this.createVerifier();
         this.createB();
     }
-
     SRP.prototype.createB = function () {
         this.BPrivate = this.buffer2BigInt(crypto.randomBytes(32));
         var BPublic = this.createK().multiply(this.buffer2BigInt(this.verifier)).add(this.generator.modPow(this.BPrivate, this.modules)).mod(this.modules);
@@ -57,8 +56,7 @@ var SRP = (function () {
         return this.sessionKey;
     };
     SRP.prototype.createM1Proof = function () {
-        var headerHash = crypto.createHash(this.hashFunction).update(this.bigInt2Buffer(this.modules)).digest(),
-            headerHelperHash = crypto.createHash(this.hashFunction).update(this.bigInt2Buffer(this.generator)).digest();
+        var headerHash = crypto.createHash(this.hashFunction).update(this.bigInt2Buffer(this.modules)).digest(), headerHelperHash = crypto.createHash(this.hashFunction).update(this.bigInt2Buffer(this.generator)).digest();
         for (var index = 0; index < headerHash.length; index++)
             headerHash[index] ^= headerHelperHash[index];
         this.M1Proof = crypto.createHash(this.hashFunction).update(headerHash).update(crypto.createHash(this.hashFunction).update(this.username).digest()).update(this.salt).update(this.APublic).update(this.BPublic).update(this.sessionKey).digest();

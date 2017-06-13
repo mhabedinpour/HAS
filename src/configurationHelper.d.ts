@@ -25,20 +25,12 @@ export declare class HASConfig {
     private pairings;
     publicKey: Buffer;
     privateKey: Buffer;
-
     constructor(deviceName: string, deviceID: string, category: number, configDir: string, TCPPort: number, setupCode: string);
-
     private readConfig();
-
     private writeConfig();
-
     increaseCCN(): void;
-
     getTXTRecords(): object;
-
     addPairing(ID: Buffer, publicKey: Buffer, isAdmin: boolean): void;
-
     removePairing(ID: Buffer): void;
-
     getPairings(ID?: Buffer): Pairing | Pairings | boolean;
 }

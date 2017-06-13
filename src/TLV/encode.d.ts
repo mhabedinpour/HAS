@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import {TLVErrors} from './values';
+import { TLVErrors } from './values';
 export interface TLVITem {
     key: number;
     value: any;
