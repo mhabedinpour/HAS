@@ -6,11 +6,11 @@
 
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
-import {HAS} from './HAS';
-import {Pairing, Pairings} from './configurationHelper';
+import HAS from './HAS';
+import {Pairing, Pairings} from './config';
 import * as TLVEnums from './TLV/values';
 import parseTLV from './TLV/parse';
-import {encodeTLV, encodeTLVError} from './TLV/encode';
+import {encodeTLV, encodeTLVError, TLVITem} from './TLV/encode';
 import SRP from './encryption/SRP';
 import HKDF from './encryption/HKDF';
 import * as ChaCha from './encryption/ChaCha20Poly1305AEAD';
@@ -216,7 +216,10 @@ export default function (server: HAS): express.Express {
                     serverPublicKey: publicKey,
                     sharedKey: sharedKey,
                     clientPublicKey: req.body.TLV[TLVEnums.TLVValues.publicKey],
-                    sessionKey: sessionKey
+                    sessionKey: sessionKey,
+                    incomingFramesCounter: 0,
+                    outgoingFramesCounter: 0,
+                    isAdmin: false,
                 };
 
                 res.end(encodeTLV([
@@ -260,7 +263,10 @@ export default function (server: HAS): express.Express {
                         if (Ed25519.Verify(iOSDeviceInfo, info[TLVEnums.TLVValues.signature], Buffer.from(pairing.publicKey, 'hex'))) {
                             req.realSocket.HAPEncryption.accessoryToControllerKey = HKDF(req.realSocket.HAPEncryption.sharedKey, 'Control-Salt', 'Control-Read-Encryption-Key');
                             req.realSocket.HAPEncryption.controllerToAccessoryKey = HKDF(req.realSocket.HAPEncryption.sharedKey, 'Control-Salt', 'Control-Write-Encryption-Key');
+                            req.realSocket.HAPEncryption.isAdmin = pairing.isAdmin;
                             req.realSocket.isEncrypted = true;
+                            req.realSocket.isAuthenticated = true;
+                            req.realSocket.clientID = info[TLVEnums.TLVValues.identifier].toString('utf8');
 
                             req.realSocket.keepAliveForEver();
 
@@ -281,6 +287,115 @@ export default function (server: HAS): express.Express {
         }
     });
 
+    app.get('/accessories', (req: any, res) => {
+        res.header('Content-Type', 'application/hap+json');
+
+        if (!req.realSocket.isAuthenticated) {
+            res.status(400).end();
+            return;
+        }
+
+        let accessoriesObject = server.getAccessories(),
+            accessories = [];
+        for (let index in accessoriesObject)
+            accessories.push(accessoriesObject[index].toJSON());
+        res.end(JSON.stringify({
+            accessories: accessories
+        }));
+    });
+
+    app.post('/pairings', (req: any, res) => {
+        console.log(req.body, req.realSocket.ID);
+        res.header('Content-Type', 'application/pairing+tlv8');
+
+        let currentState = (req.body.TLV[TLVEnums.TLVValues.state]) ? parseInt(req.body.TLV[TLVEnums.TLVValues.state].toString('hex')) : 0x00;
+
+        if (!req.realSocket.isAuthenticated || !req.realSocket.HAPEncryption.isAdmin) {
+            res.end(encodeTLVError(TLVEnums.TLVErrors.authentication, currentState));
+            return;
+        }
+
+        if (req.body.TLV[TLVEnums.TLVValues.method].toString('hex') == TLVEnums.TLVMethods.addPairing) {
+            let pairing = server.config.getPairings(req.body.TLV[TLVEnums.TLVValues.identifier]);
+            if (pairing === false) {
+                server.config.addPairing(req.body.TLV[TLVEnums.TLVValues.identifier], req.body.TLV[TLVEnums.TLVValues.publicKey], req.body.TLV[TLVEnums.TLVValues.permissions].toString('hex') == '01');
+                res.end(encodeTLV([
+                    {
+                        key: TLVEnums.TLVValues.state,
+                        value: currentState + 1
+                    }]));
+            } else {
+                pairing = pairing as Pairing;
+                if (pairing.publicKey == req.body.TLV[TLVEnums.TLVValues.publicKey].toString('hex')) {
+                    server.config.updatePairing(req.body.TLV[TLVEnums.TLVValues.identifier], req.body.TLV[TLVEnums.TLVValues.permissions].toString('hex') == '01');
+                    res.end(encodeTLV([
+                        {
+                            key: TLVEnums.TLVValues.state,
+                            value: currentState + 1
+                        }]));
+                } else
+                    res.end(encodeTLVError(TLVEnums.TLVErrors.unknown, currentState));
+            }
+        } else if (req.body.TLV[TLVEnums.TLVValues.method].toString('hex') == TLVEnums.TLVMethods.removePairing) {
+            let pairing = server.config.getPairings(req.body.TLV[TLVEnums.TLVValues.identifier]);
+            if (pairing === false)
+                res.end(encodeTLVError(TLVEnums.TLVErrors.unknown, currentState));
+            else {
+                server.config.removePairing(req.body.TLV[TLVEnums.TLVValues.identifier]);
+                res.end(encodeTLV([
+                    {
+                        key: TLVEnums.TLVValues.state,
+                        value: currentState + 1
+                    }]));
+                server.TCPServer.revokeConnections(req.body.TLV[TLVEnums.TLVValues.identifier].toString('utf8'));
+            }
+        } else
+            res.end();
+    });
+
+    app.get('/pairings', (req: any, res) => {
+        console.log(req.body, req.realSocket.ID);
+        res.header('Content-Type', 'application/pairing+tlv8');
+
+        let currentState = 1;
+
+        if (!req.realSocket.isAuthenticated || !req.realSocket.HAPEncryption.isAdmin) {
+            res.end(encodeTLVError(TLVEnums.TLVErrors.authentication, currentState));
+            return;
+        }
+
+        let pairings = server.config.getPairings() as Pairings,
+            response: TLVITem[] = [{
+                key: TLVEnums.TLVValues.state,
+                value: currentState + 1
+            }],
+            offset = 0,
+            total = Object.keys(pairings).length;
+        for (let index in pairings) {
+            let pairing = pairings[index];
+
+            response.push({
+                key: TLVEnums.TLVValues.identifier,
+                value: Buffer.from(index, 'utf8')
+            });
+            response.push({
+                key: TLVEnums.TLVValues.publicKey,
+                value: Buffer.from(pairing.publicKey, 'hex')
+            });
+            response.push({
+                key: TLVEnums.TLVValues.permissions,
+                value: Buffer.from([pairing.isAdmin])
+            });
+            offset++;
+            if (offset < total)
+                response.push({
+                    key: TLVEnums.TLVValues.separator,
+                    value: Buffer.alloc(0)
+                });
+        }
+
+        res.end(response);
+    });
 
     return app;
 };

@@ -5,8 +5,9 @@
  */
 import {EventEmitter} from 'events';
 import * as NET from 'net';
-import {HAS} from './HAS';
+import HAS from './HAS';
 import * as ChaCha from './encryption/ChaCha20Poly1305AEAD';
+const ExtendedBuffer = require('extended-buffer');
 
 const delimiter = Buffer.from('\r\n');
 
@@ -117,17 +118,18 @@ export default class TCP extends EventEmitter {
                         length = AAD.readUInt16LE(0),
                         encryptedData = data.slice(index + 2, index + 2 + length),
                         tag = data.slice(index + 2 + length, index + 2 + length + 16),
-                        nonce = Buffer.alloc(12),
-                        decrypted = ChaCha.expertDecrypt(socket.HAPEncryption.controllerToAccessoryKey, nonce, tag, encryptedData, AAD);
+                        decrypted = ChaCha.expertDecrypt(socket.HAPEncryption.controllerToAccessoryKey, this.createNonce(socket.HAPEncryption.incomingFramesCounter), tag, encryptedData, AAD);
                     if (decrypted) {
                         result = Buffer.concat([result, decrypted as Buffer]);
                         index += index + 2 + length + 16;
+                        socket.HAPEncryption.incomingFramesCounter++;
                     } else {
                         socket.emit('close');
                         return;
                     }
                 }
                 data = result;
+                //console.log(data.toString('ascii'));
             }
             let {firstLine, rest} = this.readAndDeleteFirstLineOfBuffer(data);
             this.write(Buffer.concat([firstLine, delimiter, Buffer.from(`X-Real-Socket-ID: ${socket.ID}`, 'ascii'), delimiter, rest]));
@@ -146,24 +148,36 @@ export default class TCP extends EventEmitter {
 
         socket.safeWrite = (buffer: Buffer) => {
             if (socket.hasReceivedEncryptedData) { //Since we are dealing with async code, isEncrypted is set first but our last write in M6 will happen after that and we should not encrypt M6, So we will start encryption after we have received encrypted data from client
-                let result = Buffer.alloc(0),
-                    nonce = Buffer.alloc(12);
+                //console.log(buffer.toString('ascii'));
+                let result = Buffer.alloc(0);
                 for (let index = 0; index < buffer.length;) {
                     let length = Math.min(buffer.length - index, 1024),
                         lengthBuffer = Buffer.alloc(2);
                     lengthBuffer.writeUInt16LE(length, 0);
-                    let enceypted = ChaCha.expertEncrypt(socket.HAPEncryption.accessoryToControllerKey, nonce, buffer.slice(index, index + length), lengthBuffer);
+                    let enceypted = ChaCha.expertEncrypt(socket.HAPEncryption.accessoryToControllerKey, this.createNonce(socket.HAPEncryption.outgoingFramesCounter), buffer.slice(index, index + length), lengthBuffer);
                     result = Buffer.concat([result, lengthBuffer, enceypted]);
                     index += length;
+                    socket.HAPEncryption.outgoingFramesCounter++;
                 }
                 buffer = result;
             }
+
             socket.write(buffer);
         };
 
         socket.on('error', () => {
 
         });
+    }
+
+    /**
+     * @method Creates nonce buffer for encryption and decryption
+     * @param framesCounter
+     */
+    private createNonce(framesCounter: number): Buffer {
+        let buffer = new ExtendedBuffer();
+        buffer.writeUInt64LE(framesCounter);
+        return Buffer.concat([Buffer.alloc(4), buffer.buffer]);
     }
 
     /**
@@ -282,5 +296,18 @@ export default class TCP extends EventEmitter {
 
         for (let connection of this.TCPConnectionPool)
             connection.emit('close');
+    }
+
+    public revokeConnections(clientID: string) {
+        for (let index in this.connections) {
+            let connection = this.connections[index];
+            if (connection.clientID == clientID) {
+                connection.isAuthenticated = false;
+                connection.isAdmin = false;
+                setTimeout(() => {
+                    connection.emit('close');
+                }, 5000);
+            }
+        }
     }
 }

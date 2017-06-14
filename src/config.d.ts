@@ -7,7 +7,7 @@ export interface Pairing {
 export interface Pairings {
     [ID: string]: Pairing;
 }
-export declare class HASConfig {
+export default class Config {
     deviceName: string;
     deviceID: string;
     private CCN;
@@ -32,5 +32,6 @@ export declare class HASConfig {
     getTXTRecords(): object;
     addPairing(ID: Buffer, publicKey: Buffer, isAdmin: boolean): void;
     removePairing(ID: Buffer): void;
+    updatePairing(ID: Buffer, isAdmin: boolean): void;
     getPairings(ID?: Buffer): Pairing | Pairings | boolean;
 }

@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { EventEmitter } from 'events';
-import { HAS } from './HAS';
+import HAS from './HAS';
 export default class TCP extends EventEmitter {
     private TCPServer;
     private TCPConnectionPool;
@@ -14,9 +14,11 @@ export default class TCP extends EventEmitter {
     constructor(server: HAS);
     listen(TCPPort: number, HTTPPort: number): void;
     private onConnection(socket);
+    private createNonce(framesCounter);
     private write(buffer);
     private hasExtraOpenConnection();
     private createNewConnection();
     private readAndDeleteFirstLineOfBuffer(buffer);
     close(): void;
+    revokeConnections(clientID: string): void;
 }

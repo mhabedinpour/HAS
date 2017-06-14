@@ -1,0 +1,34 @@
+import Service from './service';
+export declare type ValueFormat = 'bool' | 'uint8' | 'uint16' | 'uint32' | 'int' | 'float' | 'string' | 'tlv8' | 'data';
+export declare type ValueUnit = 'celsius' | 'percantage' | 'arcdegrees' | 'lux' | 'seconds';
+export default class Characteristic {
+    private ID;
+    private type;
+    private value?;
+    private valueFormat;
+    private valueUnit?;
+    private minValue?;
+    private maxValue?;
+    private stepValue?;
+    private maxLength?;
+    private validValues?;
+    private validRangeValues?;
+    private isHidden?;
+    private hasNotifications?;
+    private hasValue?;
+    private isReadonly?;
+    private additionalAuthorization?;
+    private service?;
+    private description?;
+    constructor(ID: number, type: string, valueFormat: ValueFormat, isHidden?: boolean, hasNotifications?: boolean, hasValue?: boolean, isReadonly?: boolean, additionalAuthorization?: boolean, valueUnit?: ValueUnit, description?: string, minValue?: number, maxValue?: number, stepValue?: number, maxLength?: number, validValues?: number[], validRangeValues?: number[]);
+    getID(): number;
+    getType(): string;
+    private isNumeric();
+    private hasLength();
+    private isBuffer();
+    setValue(value: any): void;
+    getValue(): any;
+    setService(service: Service): void;
+    private isValid(value);
+    toJSON(): {};
+}

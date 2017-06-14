@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var FS = require("fs");
 var crypto = require("crypto");
 var Ed25519 = require('ed25519');
-var HASConfig = (function () {
-    function HASConfig(deviceName, deviceID, category, configDir, TCPPort, setupCode) {
+var Config = (function () {
+    function Config(deviceName, deviceID, category, configDir, TCPPort, setupCode) {
         this.CCN = 1;
         this.featureFlag = 0x00;
         this.protocolVersion = '1.0';
@@ -44,7 +44,7 @@ var HASConfig = (function () {
         else
             throw new Error('Invalid Config File');
     }
-    HASConfig.prototype.readConfig = function () {
+    Config.prototype.readConfig = function () {
         var config = JSON.parse(FS.readFileSync(this.configDir, 'utf8'));
         if (config) {
             this.CCN = config.CCN;
@@ -59,7 +59,7 @@ var HASConfig = (function () {
         else
             throw new Error('Invalid Config File');
     };
-    HASConfig.prototype.writeConfig = function () {
+    Config.prototype.writeConfig = function () {
         if (!this.publicKey || !this.privateKey) {
             var seed = crypto.randomBytes(32);
             var keyPair = Ed25519.MakeKeypair(seed);
@@ -73,11 +73,13 @@ var HASConfig = (function () {
             privateKey: this.privateKey.toString('hex')
         }), 'utf8');
     };
-    HASConfig.prototype.increaseCCN = function () {
+    Config.prototype.increaseCCN = function () {
         this.CCN++;
+        if (this.CCN > 4294967295)
+            this.CCN = 1;
         this.writeConfig();
     };
-    HASConfig.prototype.getTXTRecords = function () {
+    Config.prototype.getTXTRecords = function () {
         return {
             'c#': this.CCN,
             ff: this.featureFlag,
@@ -89,7 +91,7 @@ var HASConfig = (function () {
             ci: this.category
         };
     };
-    HASConfig.prototype.addPairing = function (ID, publicKey, isAdmin) {
+    Config.prototype.addPairing = function (ID, publicKey, isAdmin) {
         var IDString = ID.toString('utf8');
         if (this.pairings[IDString]) {
             throw new Error('ID already exists.');
@@ -102,15 +104,24 @@ var HASConfig = (function () {
             this.statusFlag = 0x00;
         this.writeConfig();
     };
-    HASConfig.prototype.removePairing = function (ID) {
+    Config.prototype.removePairing = function (ID) {
         var IDString = ID.toString('utf8');
         if (!this.pairings[IDString]) {
             throw new Error('ID does NOT exists.');
         }
         delete this.pairings[IDString];
+        if (Object.keys(this.pairings).length <= 0)
+            this.statusFlag = 0x01;
         this.writeConfig();
     };
-    HASConfig.prototype.getPairings = function (ID) {
+    Config.prototype.updatePairing = function (ID, isAdmin) {
+        var IDString = ID.toString('utf8');
+        if (!this.pairings[IDString])
+            throw new Error('ID does NOT exists.');
+        this.pairings[IDString].isAdmin = isAdmin;
+        this.writeConfig();
+    };
+    Config.prototype.getPairings = function (ID) {
         if (ID) {
             var IDString = ID.toString('utf8');
             if (!this.pairings[IDString])
@@ -120,6 +131,6 @@ var HASConfig = (function () {
         else
             return this.pairings;
     };
-    return HASConfig;
+    return Config;
 }());
-exports.HASConfig = HASConfig;
+exports.default = Config;

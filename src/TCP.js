@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var events_1 = require("events");
 var NET = require("net");
 var ChaCha = require("./encryption/ChaCha20Poly1305AEAD");
+var ExtendedBuffer = require('extended-buffer');
 var delimiter = Buffer.from('\r\n');
 var TCP = (function (_super) {
     __extends(TCP, _super);
@@ -59,10 +60,11 @@ var TCP = (function (_super) {
                 socket.hasReceivedEncryptedData = true;
                 var result = Buffer.alloc(0);
                 for (var index = 0; index < data.length;) {
-                    var AAD = data.slice(index, index + 2), length_1 = AAD.readUInt16LE(0), encryptedData = data.slice(index + 2, index + 2 + length_1), tag = data.slice(index + 2 + length_1, index + 2 + length_1 + 16), nonce = Buffer.alloc(12), decrypted = ChaCha.expertDecrypt(socket.HAPEncryption.controllerToAccessoryKey, nonce, tag, encryptedData, AAD);
+                    var AAD = data.slice(index, index + 2), length_1 = AAD.readUInt16LE(0), encryptedData = data.slice(index + 2, index + 2 + length_1), tag = data.slice(index + 2 + length_1, index + 2 + length_1 + 16), decrypted = ChaCha.expertDecrypt(socket.HAPEncryption.controllerToAccessoryKey, _this.createNonce(socket.HAPEncryption.incomingFramesCounter), tag, encryptedData, AAD);
                     if (decrypted) {
                         result = Buffer.concat([result, decrypted]);
                         index += index + 2 + length_1 + 16;
+                        socket.HAPEncryption.incomingFramesCounter++;
                     }
                     else {
                         socket.emit('close');
@@ -84,13 +86,14 @@ var TCP = (function (_super) {
         };
         socket.safeWrite = function (buffer) {
             if (socket.hasReceivedEncryptedData) {
-                var result = Buffer.alloc(0), nonce = Buffer.alloc(12);
+                var result = Buffer.alloc(0);
                 for (var index = 0; index < buffer.length;) {
                     var length_2 = Math.min(buffer.length - index, 1024), lengthBuffer = Buffer.alloc(2);
                     lengthBuffer.writeUInt16LE(length_2, 0);
-                    var enceypted = ChaCha.expertEncrypt(socket.HAPEncryption.accessoryToControllerKey, nonce, buffer.slice(index, index + length_2), lengthBuffer);
+                    var enceypted = ChaCha.expertEncrypt(socket.HAPEncryption.accessoryToControllerKey, _this.createNonce(socket.HAPEncryption.outgoingFramesCounter), buffer.slice(index, index + length_2), lengthBuffer);
                     result = Buffer.concat([result, lengthBuffer, enceypted]);
                     index += length_2;
+                    socket.HAPEncryption.outgoingFramesCounter++;
                 }
                 buffer = result;
             }
@@ -98,6 +101,11 @@ var TCP = (function (_super) {
         };
         socket.on('error', function () {
         });
+    };
+    TCP.prototype.createNonce = function (framesCounter) {
+        var buffer = new ExtendedBuffer();
+        buffer.writeUInt64LE(framesCounter);
+        return Buffer.concat([Buffer.alloc(4), buffer.buffer]);
     };
     TCP.prototype.write = function (buffer) {
         var wrote = false;
@@ -183,6 +191,22 @@ var TCP = (function (_super) {
         for (var _i = 0, _a = this.TCPConnectionPool; _i < _a.length; _i++) {
             var connection = _a[_i];
             connection.emit('close');
+        }
+    };
+    TCP.prototype.revokeConnections = function (clientID) {
+        var _loop_1 = function (index) {
+            var connection = this_1.connections[index];
+            if (connection.clientID == clientID) {
+                connection.isAuthenticated = false;
+                connection.isAdmin = false;
+                setTimeout(function () {
+                    connection.emit('close');
+                }, 5000);
+            }
+        };
+        var this_1 = this;
+        for (var index in this.connections) {
+            _loop_1(index);
         }
     };
     return TCP;

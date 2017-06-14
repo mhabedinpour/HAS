@@ -21,7 +21,7 @@ export interface Pairings {
 /**
  * @class HAS Configuration Helper
  */
-export class HASConfig {
+export default class Config {
 
     /**
      * @property Device Name
@@ -227,6 +227,9 @@ export class HASConfig {
      */
     public increaseCCN() {
         this.CCN++;
+        if (this.CCN > 4294967295)
+            this.CCN = 1;
+        //TODO: Send notification to clients
         this.writeConfig();
     }
 
@@ -285,6 +288,26 @@ export class HASConfig {
         }
 
         delete this.pairings[IDString];
+
+        //Update status flag to make pairing available again
+        if (Object.keys(this.pairings).length <= 0)
+            this.statusFlag = 0x01;
+
+        this.writeConfig();
+    }
+
+    /**
+     * @method Updates an existing pairing
+     * @param ID
+     * @param isAdmin
+     */
+    public updatePairing(ID: Buffer, isAdmin: boolean) {
+        let IDString = ID.toString('utf8');
+
+        if (!this.pairings[IDString])
+            throw new Error('ID does NOT exists.');
+
+        this.pairings[IDString].isAdmin = isAdmin;
 
         this.writeConfig();
     }
