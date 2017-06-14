@@ -31,3 +31,17 @@ export declare enum TLVValues {
     fragmentLast = 13,
     separator = 255,
 }
+export declare enum statusCodes {
+    OK = 0,
+    insufficientPrivilege = -70401,
+    communicationError = -70402,
+    busy = -70403,
+    isReadonly = -70404,
+    isWriteonly = -70405,
+    notificationIsNotSupported = -70406,
+    outOfResource = -70407,
+    timedout = -70408,
+    notFound = -70409,
+    invalidValue = -70410,
+    insufficientAuthoriation = -70411,
+}

@@ -23,6 +23,9 @@ var Service = (function () {
             throw new Error('Accessory is already set.');
         this.accessory = accessory;
     };
+    Service.prototype.getAccessory = function () {
+        return this.accessory;
+    };
     Service.prototype.getIsPrimary = function () {
         return this.isPrimary;
     };
@@ -30,19 +33,19 @@ var Service = (function () {
         return this.linkedServices;
     };
     Service.prototype.addCharacteristic = function (characteristic) {
-        if (this.accessory)
-            throw new Error('Accessory is already set.');
-        if (Object.keys(this.characteristics).length >= 100)
-            throw new Error('Service can not have more than 100 characteristics.');
         var characteristicID = characteristic.getID();
+        if (this.accessory)
+            throw new Error('Accessory is already set: ' + characteristicID);
+        if (Object.keys(this.characteristics).length >= 100)
+            throw new Error('Service can not have more than 100 characteristics: ' + characteristicID);
         if (characteristicID < 1 || characteristicID > 999)
-            throw new Error('Characteristic ID can not be less than 1 or more than 999.');
+            throw new Error('Characteristic ID can not be less than 1 or more than 999: ' + characteristicID);
         for (var index in this.characteristics) {
             if (this.characteristics[index].getType() == characteristic.getType())
-                throw new Error('Characteristic type already exists.');
+                throw new Error('Characteristic type already exists: ' + characteristicID + ' ' + characteristic.getType());
         }
         if (this.characteristics[characteristicID])
-            throw new Error('Characteristic ID already exists.');
+            throw new Error('Characteristic ID already exists: ' + characteristicID);
         this.characteristics[characteristicID] = characteristic;
         characteristic.setService(this);
     };

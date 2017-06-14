@@ -12,3 +12,5 @@ var characteristic_1 = require("./src/characteristic");
 exports.Characteristic = characteristic_1.default;
 var categories_1 = require("./src/categories");
 exports.categories = categories_1.categories;
+var values_1 = require("./src/TLV/values");
+exports.statusCodes = values_1.statusCodes;

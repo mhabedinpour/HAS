@@ -60,10 +60,10 @@ var TCP = (function (_super) {
                 socket.hasReceivedEncryptedData = true;
                 var result = Buffer.alloc(0);
                 for (var index = 0; index < data.length;) {
-                    var AAD = data.slice(index, index + 2), length_1 = AAD.readUInt16LE(0), encryptedData = data.slice(index + 2, index + 2 + length_1), tag = data.slice(index + 2 + length_1, index + 2 + length_1 + 16), decrypted = ChaCha.expertDecrypt(socket.HAPEncryption.controllerToAccessoryKey, _this.createNonce(socket.HAPEncryption.incomingFramesCounter), tag, encryptedData, AAD);
+                    var AAD = data.slice(index, index + 2), length = AAD.readUInt16LE(0), encryptedData = data.slice(index + 2, index + 2 + length), tag = data.slice(index + 2 + length, index + 2 + length + 16), decrypted = ChaCha.expertDecrypt(socket.HAPEncryption.controllerToAccessoryKey, _this.createNonce(socket.HAPEncryption.incomingFramesCounter), tag, encryptedData, AAD);
                     if (decrypted) {
                         result = Buffer.concat([result, decrypted]);
-                        index += index + 2 + length_1 + 16;
+                        index += index + 2 + length + 16;
                         socket.HAPEncryption.incomingFramesCounter++;
                     }
                     else {
@@ -88,16 +88,20 @@ var TCP = (function (_super) {
             if (socket.hasReceivedEncryptedData) {
                 var result = Buffer.alloc(0);
                 for (var index = 0; index < buffer.length;) {
-                    var length_2 = Math.min(buffer.length - index, 1024), lengthBuffer = Buffer.alloc(2);
-                    lengthBuffer.writeUInt16LE(length_2, 0);
-                    var enceypted = ChaCha.expertEncrypt(socket.HAPEncryption.accessoryToControllerKey, _this.createNonce(socket.HAPEncryption.outgoingFramesCounter), buffer.slice(index, index + length_2), lengthBuffer);
+                    var length = Math.min(buffer.length - index, 1024), lengthBuffer = Buffer.alloc(2);
+                    lengthBuffer.writeUInt16LE(length, 0);
+                    var enceypted = ChaCha.expertEncrypt(socket.HAPEncryption.accessoryToControllerKey, _this.createNonce(socket.HAPEncryption.outgoingFramesCounter), buffer.slice(index, index + length), lengthBuffer);
                     result = Buffer.concat([result, lengthBuffer, enceypted]);
-                    index += length_2;
+                    index += length;
                     socket.HAPEncryption.outgoingFramesCounter++;
                 }
                 buffer = result;
             }
             socket.write(buffer);
+        };
+        socket.sendNotification = function (notification) {
+            var body = "EVENT/1.0 200 OK" + delimiter + "Content-Type: application/hap+json" + delimiter + "Content-Length: " + notification.length + delimiter + delimiter + notification;
+            socket.safeWrite(Buffer.from(body));
         };
         socket.on('error', function () {
         });
@@ -192,6 +196,17 @@ var TCP = (function (_super) {
             var connection = _a[_i];
             connection.emit('close');
         }
+    };
+    TCP.prototype.sendNotification = function (socketIDs, notification) {
+        var sent = [];
+        for (var _i = 0, socketIDs_1 = socketIDs; _i < socketIDs_1.length; _i++) {
+            var socketID = socketIDs_1[_i];
+            if (this.connections[socketID]) {
+                this.connections[socketID].sendNotification(notification);
+                sent.push(socketID);
+            }
+        }
+        return sent;
     };
     TCP.prototype.revokeConnections = function (clientID) {
         var _loop_1 = function (index) {

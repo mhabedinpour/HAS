@@ -10,6 +10,7 @@ import expressApp from './express';
 import * as express from 'express';
 import TCP from './TCP';
 import Accessory from './accessory';
+import {statusCodes} from './TLV/values';
 
 //HAP is using HTTP in it's own way. To meet its requirements and also not rewriting the whole HTTP module, We will create a TCP server which iOS will connect to it and we will do HAP stuffs in this layer.
 //We also will create an HTTP server which will process the iOS requests and generate response for them.
@@ -67,6 +68,11 @@ export default class HAS {
      */
     private isRunning: boolean = false;
 
+    /**
+     * @property Identify handler for this characteristic
+     * @public
+     */
+    public onIdentify: (value: any, callback: (status: statusCodes) => void) => void;
 
     /**
      * @method Creates new instance of class
@@ -141,16 +147,19 @@ export default class HAS {
         let accessoryID = accessory.getID();
 
         if (accessoryID < 1 || accessoryID > 999)
-            throw new Error('Accessory ID can not be less than 1 or more than 999.');
+            throw new Error('Accessory ID can not be less than 1 or more than 999: ' + accessoryID);
 
         if (Object.keys(this.accessories).length >= 100)
-            throw new Error('Server can not have more than 100 accessories.');
+            throw new Error('Server can not have more than 100 accessories: ' + accessoryID);
 
         if (Object.keys(accessory.getServices()).length <= 0)
-            throw new Error('Accessory must contain at least one service.');
+            throw new Error('Accessory must contain at least one service: ' + accessoryID);
+
+        if (!accessory.getServices()[1])
+            throw new Error('Accessory must contain information service: ' + accessoryID);
 
         if (this.accessories[accessoryID])
-            throw new Error('Accessory ID already exists.');
+            throw new Error('Accessory ID already exists: ' + accessoryID);
 
         this.accessories[accessoryID] = accessory;
         accessory.setServer(this);

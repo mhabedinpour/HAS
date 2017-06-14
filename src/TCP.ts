@@ -165,6 +165,11 @@ export default class TCP extends EventEmitter {
             socket.write(buffer);
         };
 
+        socket.sendNotification = (notification: string) => {
+            let body = `EVENT/1.0 200 OK${delimiter}Content-Type: application/hap+json${delimiter}Content-Length: ${notification.length}${delimiter}${delimiter}${notification}`;
+            socket.safeWrite(Buffer.from(body));
+        };
+
         socket.on('error', () => {
 
         });
@@ -296,6 +301,23 @@ export default class TCP extends EventEmitter {
 
         for (let connection of this.TCPConnectionPool)
             connection.emit('close');
+    }
+
+    /**
+     * @method Send notification to clients
+     * @param socketIDs
+     * @param notification
+     * @returns {Array}
+     */
+    public sendNotification(socketIDs: string[], notification: string): string[] {
+        let sent = [];
+        for (let socketID of socketIDs) {
+            if (this.connections[socketID]) {
+                this.connections[socketID].sendNotification(notification);
+                sent.push(socketID);
+            }
+        }
+        return sent;
     }
 
     /**

@@ -36,3 +36,18 @@ var TLVValues;
     TLVValues[TLVValues["fragmentLast"] = 13] = "fragmentLast";
     TLVValues[TLVValues["separator"] = 255] = "separator";
 })(TLVValues = exports.TLVValues || (exports.TLVValues = {}));
+var statusCodes;
+(function (statusCodes) {
+    statusCodes[statusCodes["OK"] = 0] = "OK";
+    statusCodes[statusCodes["insufficientPrivilege"] = -70401] = "insufficientPrivilege";
+    statusCodes[statusCodes["communicationError"] = -70402] = "communicationError";
+    statusCodes[statusCodes["busy"] = -70403] = "busy";
+    statusCodes[statusCodes["isReadonly"] = -70404] = "isReadonly";
+    statusCodes[statusCodes["isWriteonly"] = -70405] = "isWriteonly";
+    statusCodes[statusCodes["notificationIsNotSupported"] = -70406] = "notificationIsNotSupported";
+    statusCodes[statusCodes["outOfResource"] = -70407] = "outOfResource";
+    statusCodes[statusCodes["timedout"] = -70408] = "timedout";
+    statusCodes[statusCodes["notFound"] = -70409] = "notFound";
+    statusCodes[statusCodes["invalidValue"] = -70410] = "invalidValue";
+    statusCodes[statusCodes["insufficientAuthoriation"] = -70411] = "insufficientAuthoriation";
+})(statusCodes = exports.statusCodes || (exports.statusCodes = {}));

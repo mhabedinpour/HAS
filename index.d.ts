@@ -4,4 +4,5 @@ import Accessory from './src/accessory';
 import Service from './src/service';
 import Characteristic from './src/characteristic';
 import { categories } from './src/categories';
-export { HAS as Server, Config, Accessory, Service, Characteristic, categories };
+import { statusCodes } from './src/TLV/values';
+export { HAS as Server, Config, Accessory, Service, Characteristic, categories, statusCodes };

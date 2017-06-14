@@ -6,6 +6,7 @@
 
 import Service from './service';
 import HAS from './HAS';
+import Characteristic from './characteristic';
 
 export default class Accessory {
 
@@ -70,23 +71,31 @@ export default class Accessory {
     }
 
     /**
+     * @methos Returns server of this accessory
+     * @returns {HAS}
+     */
+    public getServer(): HAS {
+        return this.server as HAS;
+    }
+
+    /**
      * @method Adds a service to this accessory
      * @param service
      */
     public addService(service: Service) {
-        if (this.server)
-            throw new Error('Server is already set.');
-
-        if (Object.keys(this.services).length >= 100)
-            throw new Error('Accessory can not have more than 100 services.');
-
         let serviceID = service.getID();
 
+        if (this.server)
+            throw new Error('Server is already set: ' + serviceID);
+
+        if (Object.keys(this.services).length >= 100)
+            throw new Error('Accessory can not have more than 100 services: ' + serviceID);
+
         if (serviceID < 1 || serviceID > 999)
-            throw new Error('Service ID can not be less than 1 or more than 999.');
+            throw new Error('Service ID can not be less than 1 or more than 999: ' + serviceID);
 
         if (Object.keys(service.getCharacteristics()).length <= 0)
-            throw new Error('Service must contain at least one characteristic.');
+            throw new Error('Service must contain at least one characteristic: ' + serviceID);
 
         if (this.services[serviceID])
             throw new Error('Service ID already exists.');
@@ -95,9 +104,9 @@ export default class Accessory {
             throw  new Error('Primary service already exists.');
 
         if (service.getLinkedServices().length) {
-            for (let serviceID of service.getLinkedServices()) {
-                if (!this.services[serviceID])
-                    throw new Error('Linked service does not exists on this accessory.');
+            for (let linkedServiceID of service.getLinkedServices()) {
+                if (!this.services[linkedServiceID])
+                    throw new Error('Linked service does not exists on this accessory: ' + serviceID + ':' + linkedServiceID);
             }
         }
 
@@ -118,6 +127,28 @@ export default class Accessory {
     }
 
     /**
+     * @method Returns characteristic by IID
+     * @param IID
+     * @returns {any}
+     */
+    public getCharacteristic(IID: number): Characteristic | boolean {
+        if (this.IIDMap[IID])
+            return this.services[this.IIDMap[IID].serviceID].getCharacteristics()[this.IIDMap[IID].characteristicID];
+        else
+            return false;
+    }
+
+    /**
+     * @method Pairing Function
+     * @param serviceID
+     * @param characteristicID
+     * @returns {number}
+     */
+    public getIID(serviceID: number, characteristicID: number): number {
+        return (serviceID + characteristicID) * (serviceID + characteristicID + 1) * 0.5 + characteristicID;
+    }
+
+    /**
      * @method Returns an object which represents this accessory
      * @returns {{[p: string]: any}}
      */
@@ -129,7 +160,7 @@ export default class Accessory {
             //To have a better API we are forcing unique IDs at just one level, But HAP needs IDs to be unique at both levels.
             //We will use pairing function to generate unique numbers from serviceID and characteristicID to make IDs unique at both levels.
             for (let characteristic of JSON.characteristics) {
-                let IID = (JSON.iid + characteristic.iid) * (JSON.iid + characteristic.iid + 1) * 0.5 + characteristic.iid; //Pairing Function https://en.wikipedia.org/wiki/Pairing_function
+                let IID = this.getIID(JSON.iid, characteristic.iid);  //Pairing Function https://en.wikipedia.org/wiki/Pairing_function
                 this.IIDMap[IID] = {
                     serviceID: JSON.iid,
                     characteristicID: characteristic.iid

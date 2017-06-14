@@ -14,6 +14,7 @@ export default class Service {
         [index: number]: Characteristic;
     };
     setAccessory(accessory: Accessory): void;
+    getAccessory(): Accessory;
     getIsPrimary(): boolean;
     getLinkedServices(): number[];
     addCharacteristic(characteristic: Characteristic): void;

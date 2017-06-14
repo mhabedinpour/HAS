@@ -16,6 +16,7 @@ import HKDF from './encryption/HKDF';
 import * as ChaCha from './encryption/ChaCha20Poly1305AEAD';
 const Ed25519 = require('ed25519');
 const Curve25519 = require('curve25519-n2');
+import Characteristic from './characteristic';
 
 export default function (server: HAS): express.Express {
     const app: express.Express = express();
@@ -46,9 +47,14 @@ export default function (server: HAS): express.Express {
         } else
             next();
     });
-    app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({extended: false}));
+    app.use(bodyParser.json({
+        type: 'application/hap+json'
+    }));
+    app.use(bodyParser.urlencoded({
+        extended: false
+    }));
 
+    //Pair Setup
     app.post('/pair-setup', (req: any, res) => {
         //console.log(req.body, req.realSocket.ID);
         res.header('Content-Type', 'application/pairing+tlv8');
@@ -178,6 +184,7 @@ export default function (server: HAS): express.Express {
         }
     });
 
+    //Pair Verify
     app.post('/pair-verify', (req: any, res) => {
         //console.log(req.body, req.realSocket.ID);
         res.header('Content-Type', 'application/pairing+tlv8');
@@ -287,11 +294,14 @@ export default function (server: HAS): express.Express {
         }
     });
 
+    //List of Accessories
     app.get('/accessories', (req: any, res) => {
         res.header('Content-Type', 'application/hap+json');
 
         if (!req.realSocket.isAuthenticated) {
-            res.status(400).end();
+            res.status(400).end(JSON.stringify({
+                status: TLVEnums.statusCodes.insufficientPrivilege
+            }));
             return;
         }
 
@@ -304,6 +314,7 @@ export default function (server: HAS): express.Express {
         }));
     });
 
+    //Add or remove a pairing
     app.post('/pairings', (req: any, res) => {
         //console.log(req.body, req.realSocket.ID);
         res.header('Content-Type', 'application/pairing+tlv8');
@@ -315,6 +326,7 @@ export default function (server: HAS): express.Express {
             return;
         }
 
+        //Add New Pairing
         if (req.body.TLV[TLVEnums.TLVValues.method].toString('hex') == TLVEnums.TLVMethods.addPairing) {
             let pairing = server.config.getPairings(req.body.TLV[TLVEnums.TLVValues.identifier]);
             if (pairing === false) {
@@ -336,6 +348,7 @@ export default function (server: HAS): express.Express {
                 } else
                     res.end(encodeTLVError(TLVEnums.TLVErrors.unknown, currentState));
             }
+            //Remove Pairing
         } else if (req.body.TLV[TLVEnums.TLVValues.method].toString('hex') == TLVEnums.TLVMethods.removePairing) {
             let pairing = server.config.getPairings(req.body.TLV[TLVEnums.TLVValues.identifier]);
             if (pairing === false)
@@ -353,6 +366,7 @@ export default function (server: HAS): express.Express {
             res.end();
     });
 
+    //List of Pairings
     app.get('/pairings', (req: any, res) => {
         //console.log(req.body, req.realSocket.ID);
         res.header('Content-Type', 'application/pairing+tlv8');
@@ -395,6 +409,183 @@ export default function (server: HAS): express.Express {
         }
 
         res.end(response);
+    });
+
+    //Read value of characteristics
+    app.get('/characteristics', (req: any, res) => {
+        //console.log(req.body, req.realSocket.ID);
+        res.header('Content-Type', 'application/hap+json');
+
+        if (!req.realSocket.isAuthenticated) {
+            res.status(400).end(JSON.stringify({
+                status: TLVEnums.statusCodes.insufficientPrivilege
+            }));
+            return;
+        }
+
+        let characteristics2Read = req.query.id.split(',');
+
+        let characteristics: { [index: string]: any }[] = [],
+            allOK = true;
+
+        for (let characteristic of characteristics2Read) {
+            characteristic = characteristic.split('.');
+            let accessoryID = parseInt(characteristic[0]),
+                characteristicID = parseInt(characteristic[1]);
+
+            let object: { [index: string]: any } = {
+                aid: accessoryID,
+                iid: characteristicID
+            };
+
+            let accessory = server.getAccessories()[accessoryID],
+                error = null,
+                value = null;
+            if (accessory) {
+                let characteristic = accessory.getCharacteristic(characteristicID);
+                if (characteristic) {
+                    characteristic = characteristic as Characteristic;
+                    if (characteristic.getHasValue())
+                        value = characteristic.getValue();
+                    else
+                        error = TLVEnums.statusCodes.isWriteonly;
+
+                    if (req.query.meta)
+                        characteristic.addMetadata(object);
+
+                    if (req.query.perms)
+                        object['perms'] = characteristic.getPermissions();
+
+                    if (req.query.type)
+                        object['type'] = characteristic.getType();
+
+                    if (req.query.ev)
+                        object['ev'] = characteristic.getHasNotifications();
+                } else
+                    error = TLVEnums.statusCodes.notFound;
+            } else
+                error = TLVEnums.statusCodes.notFound;
+
+            if (error) {
+                object['status'] = error;
+                allOK = false;
+            } else {
+                object['value'] = value;
+                object['status'] = TLVEnums.statusCodes.OK;
+            }
+
+            characteristics.push(object);
+        }
+
+        if (allOK) {
+            for (let characteristic of characteristics)
+                delete characteristic['status'];
+        }
+
+        res.status(allOK ? 200 : 207).end(JSON.stringify({
+            characteristics: characteristics
+        }));
+    });
+
+    //Write value of characteristics
+    app.put('/characteristics', async (req: any, res) => {
+        //console.log(req.body);
+        res.header('Content-Type', 'application/hap+json');
+
+        if (!req.realSocket.isAuthenticated) {
+            res.status(400).end(JSON.stringify({
+                status: TLVEnums.statusCodes.insufficientPrivilege
+            }));
+            return;
+        }
+
+        let characteristics: {}[] = [],
+            allOK = true;
+
+        await Promise.all(req.body.characteristics.map(async (characteristic: any) => {
+            let accessoryID = parseInt(characteristic.aid),
+                characteristicID = parseInt(characteristic.iid),
+                value = characteristic.value,
+                event = characteristic.ev,
+                authData = characteristic.authData;
+
+            let accessory = server.getAccessories()[accessoryID],
+                error = null;
+
+            if (accessory) {
+                let characteristic = accessory.getCharacteristic(characteristicID);
+                if (characteristic) {
+                    characteristic = characteristic as Characteristic;
+                    if (event && !characteristic.getHasNotifications())
+                        error = TLVEnums.statusCodes.notificationIsNotSupported;
+                    if (!error) {
+                        if (event)
+                            characteristic.subscribe(req.realSocket.ID);
+
+                        if (event === false)
+                            characteristic.unsubscribe(req.realSocket.ID);
+
+                        if (value != null && value != undefined) {
+                            try {
+                                await characteristic.writeValue(value, authData);
+                            } catch (e) {
+                                error = e;
+                            }
+                        }
+                    }
+                } else
+                    error = TLVEnums.statusCodes.notFound;
+            } else
+                error = TLVEnums.statusCodes.notFound;
+
+            let object: { [index: string]: any } = {
+                aid: accessoryID,
+                iid: characteristicID
+            };
+
+            if (error) {
+                object['status'] = error;
+                allOK = false;
+            } else
+                object['status'] = TLVEnums.statusCodes.OK;
+
+            characteristics.push(object);
+        }));
+
+        if (allOK)
+            res.removeHeader('Content-Type');
+        res.status(allOK ? 204 : 207).end(allOK ? null : JSON.stringify({
+            characteristics: characteristics
+        }));
+
+    });
+
+    //Accessory Identify (Only when device is unpaired)
+    app.get('/identify', (req: any, res) => {
+        res.header('Content-Type', 'application/hap+json');
+
+        //Server is already paired
+        if (server.config.statusFlag != 0x01) {
+            res.status(400).end(JSON.stringify({
+                status: TLVEnums.statusCodes.insufficientPrivilege
+            }));
+            return;
+        }
+
+        if (server.onIdentify) {
+            server.onIdentify(true, (status) => {
+                if (status == TLVEnums.statusCodes.OK) {
+                    res.removeHeader('Content-Type');
+                    res.status(204).end();
+                } else
+                    res.status(500).end(JSON.stringify({
+                        status: status
+                    }));
+            });
+        } else
+            res.status(500).end(JSON.stringify({
+                status: TLVEnums.statusCodes.communicationError
+            }));
     });
 
     return app;

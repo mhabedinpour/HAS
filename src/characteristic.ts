@@ -5,6 +5,7 @@
  */
 
 import Service from './service';
+import {statusCodes} from './TLV/values';
 
 export type ValueFormat = 'bool' | 'uint8' | 'uint16' | 'uint32' | 'int' | 'float' | 'string' | 'tlv8' | 'data';
 export type ValueUnit = 'celsius' | 'percantage' | 'arcdegrees' | 'lux' | 'seconds';
@@ -118,6 +119,18 @@ export default class Characteristic {
      */
     private description?: string;
 
+    /**
+     * @property Subscribers for Notifications
+     * @private
+     */
+    private subscribers: string[] = [];
+
+    /**
+     * @property Write handler for this characteristic
+     * @public
+     */
+    public onWrite: (value: any, callback: (status: statusCodes) => void, authData?: Buffer) => void;
+
     constructor(ID: number, type: string, valueFormat: ValueFormat, isHidden?: boolean, hasNotifications?: boolean, hasValue?: boolean, isReadonly?: boolean, additionalAuthorization?: boolean, valueUnit?: ValueUnit, description?: string, minValue?: number, maxValue?: number, stepValue?: number, maxLength?: number, validValues?: number[], validRangeValues?: number[]) {
         this.ID = ID;
 
@@ -175,6 +188,30 @@ export default class Characteristic {
     }
 
     /**
+     * @method Returns hasValue
+     * @returns {string}
+     */
+    public getHasValue(): boolean {
+        return this.hasValue as boolean;
+    }
+
+    /**
+     * @method Returns hasNotifications
+     * @returns {string}
+     */
+    public getHasNotifications(): boolean {
+        return this.hasNotifications as boolean;
+    }
+
+    /**
+     * @method Returns isReadonly
+     * @returns {string}
+     */
+    public getIsReadonly(): boolean {
+        return this.isReadonly as boolean;
+    }
+
+    /**
      * @method Whether or not this is a numeric characteristic
      * @returns {boolean}
      */
@@ -209,9 +246,23 @@ export default class Characteristic {
      * @method Sets the value of this characteristic
      * @param value
      */
-    public setValue(value: any) {
-        if (this.isValid(value))
+    public setValue(value: any, checkValue: boolean = true) {
+        if (!this.hasValue)
+            return;
+        if (!checkValue || this.isValid(value)) {
             this.value = value;
+
+            if (this.service && this.service.getAccessory() && this.service.getAccessory().getServer()) {
+                this.subscribers = this.service.getAccessory().getServer().TCPServer.sendNotification(this.subscribers, JSON.stringify({
+                    characteristics: [{
+                        aid: this.service.getAccessory().getID(),
+                        iid: this.service.getAccessory().getIID(this.service.getID(), this.ID),
+                        value: this.value
+                    }]
+                }));
+            }
+        } else
+            throw new Error('Invalid Value: ' + value.toString());
     }
 
     /**
@@ -234,11 +285,36 @@ export default class Characteristic {
     }
 
     /**
+     * @method Subscribes a TCP socket to this characteristic events
+     * @param socketID
+     */
+    public subscribe(socketID: string) {
+        if (!this.hasNotifications)
+            return;
+        if (this.subscribers.indexOf(socketID) <= -1)
+            this.subscribers.push(socketID);
+    }
+
+    /**
+     * @method Unsubscribes a TCP socket for this characteristic events
+     * @param socketID
+     */
+    public unsubscribe(socketID: string) {
+        if (!this.hasNotifications)
+            return;
+
+        this.subscribers.splice(this.subscribers.indexOf(socketID), 1);
+    }
+
+    /**
      * @method Checks whether the provided value is valid or not
      * @param value
      * @returns {boolean}
      */
-    private isValid(value: any): boolean {
+    public isValid(value: any): boolean {
+        if (value === null || value === undefined)
+            return false;
+
         if (this.isNumeric()) {
             if (this.minValue && value < this.minValue)
                 return false;
@@ -254,32 +330,69 @@ export default class Characteristic {
 
             if (this.validRangeValues && (this.value < this.validRangeValues[0] || this.value > this.validRangeValues[1]))
                 return false;
-        }
+        } else {
 
-        if (this.maxLength && value.length > this.maxLength)
-            return false;
+            if (this.isBuffer() && !Buffer.isBuffer(value))
+                return false;
+
+            if (this.maxLength && value.length > this.maxLength)
+                return false;
+        }
 
         return true;
     }
 
     /**
-     * @method Returns an object which represents this characteristic
-     * @returns {{[p: string]: any}}
+     * @method Writes value of this characteristic
+     * @param value
+     * @returns {Promise<T>}
      */
-    public toJSON(): {} {
-        let value;
-        if (this.hasValue && this.value != undefined) {
-            if (this.isNumeric())
-                value = parseFloat(this.value);
-            else if (this.valueFormat == 'bool')
-                value = this.value == 1;
-            else if (this.isBuffer())
-                value = this.value.toString('base64');
-            else
-                value = this.value;
-        } else
-            value = null;
+    public writeValue(value: any, authData: string): Promise<number> {
+        return new Promise((resolve, reject) => {
+            if (this.isValid(value)) {
+                if (this.isReadonly) {
+                    reject(statusCodes.isReadonly);
+                    return;
+                }
+                if (this.isNumeric())
+                    value = parseFloat(value);
+                else if (this.valueFormat == 'bool')
+                    value = value == 1;
+                else if (this.isBuffer())
+                    value = Buffer.from(value, 'base64');
+                else
+                    value = value.toString();
+                if (this.onWrite) {
+                    let timeout = setTimeout(function () {
+                        reject(statusCodes.timedout);
+                    }, 10000);
+                    this.onWrite(value, (status) => {
+                        clearTimeout(timeout);
+                        if (status == statusCodes.OK) {
+                            if (this.hasValue)
+                                this.setValue(value, false);
+                            resolve(statusCodes.OK);
+                        } else
+                            reject(status);
+                    }, this.additionalAuthorization ? Buffer.from(authData, 'base64') : undefined);
+                } else {
+                    if (this.hasValue) {
+                        this.setValue(value, false);
+                        resolve(statusCodes.OK);
+                    } else
+                        reject(statusCodes.communicationError);
+                }
+            } else
+                reject(statusCodes.invalidValue);
 
+        });
+    }
+
+    /**
+     * @method Returns array of permissions of this characteristic
+     * @returns {string[]}
+     */
+    public getPermissions(): string[] {
         let permissions: string[] = [];
         if (this.hasValue)
             permissions.push('pr');
@@ -292,21 +405,17 @@ export default class Characteristic {
         if (this.isHidden)
             permissions.push('hd');
 
-        var object: { [index: string]: any } = {
-            type: this.type,
-            iid: this.ID,
-            perms: permissions,
-            format: this.valueFormat,
-        };
+        return permissions;
+    }
 
-        if (value != null && value != undefined)
-            object['value'] = value;
+    /**
+     * @method Returns metadata of this characteristic
+     * @returns {{[p: string]: any}}
+     */
+    public getMetadata(): { [index: string]: any } {
+        let object: { [index: string]: any } = {};
 
-        if (this.hasNotifications)
-            object['ev'] = true;
-
-        if (this.description)
-            object['description'] = this.description;
+        object['format'] = this.valueFormat;
 
         if (this.valueUnit)
             object['unit'] = this.valueUnit;
@@ -328,6 +437,56 @@ export default class Characteristic {
 
         if (this.validRangeValues)
             object['valid-values-range'] = this.validRangeValues;
+
+        return object;
+    }
+
+    /**
+     * @method Adds metadata to a characteristic object
+     * @param object
+     */
+    public addMetadata(object: any) {
+        let metadata = this.getMetadata();
+
+        for (let index in metadata)
+            object[index] = metadata[index];
+    }
+
+    /**
+     * @method Returns an object which represents this characteristic
+     * @returns {{[p: string]: any}}
+     */
+    public toJSON(): {} {
+        let value;
+        if (this.hasValue && this.value != undefined) {
+            if (this.isNumeric())
+                value = parseFloat(this.value);
+            else if (this.valueFormat == 'bool')
+                value = this.value == 1;
+            else if (this.isBuffer())
+                value = this.value.toString('base64');
+            else
+                value = this.value.toString();
+        } else
+            value = null;
+
+
+        var object: { [index: string]: any } = {
+            type: this.type,
+            iid: this.ID,
+            perms: this.getPermissions(),
+        };
+
+        if (value !== null && value !== undefined)
+            object['value'] = value;
+
+        if (this.hasNotifications)
+            object['ev'] = true;
+
+        if (this.description)
+            object['description'] = this.description;
+
+        this.addMetadata(object);
 
         return object;
     }

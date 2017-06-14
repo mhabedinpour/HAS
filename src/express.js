@@ -1,4 +1,39 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [0, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var express = require("express");
 var bodyParser = require("body-parser");
@@ -11,6 +46,7 @@ var ChaCha = require("./encryption/ChaCha20Poly1305AEAD");
 var Ed25519 = require('ed25519');
 var Curve25519 = require('curve25519-n2');
 function default_1(server) {
+    var _this = this;
     var app = express();
     app.use(function (req, res, next) {
         if (!req.headers['x-real-socket-id']) {
@@ -38,8 +74,12 @@ function default_1(server) {
         else
             next();
     });
-    app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({ extended: false }));
+    app.use(bodyParser.json({
+        type: 'application/hap+json'
+    }));
+    app.use(bodyParser.urlencoded({
+        extended: false
+    }));
     app.post('/pair-setup', function (req, res) {
         res.header('Content-Type', 'application/pairing+tlv8');
         var currentState = (req.body.TLV[TLVEnums.TLVValues.state]) ? parseInt(req.body.TLV[TLVEnums.TLVValues.state].toString('hex')) : 0x00;
@@ -239,7 +279,9 @@ function default_1(server) {
     app.get('/accessories', function (req, res) {
         res.header('Content-Type', 'application/hap+json');
         if (!req.realSocket.isAuthenticated) {
-            res.status(400).end();
+            res.status(400).end(JSON.stringify({
+                status: TLVEnums.statusCodes.insufficientPrivilege
+            }));
             return;
         }
         var accessoriesObject = server.getAccessories(), accessories = [];
@@ -333,6 +375,171 @@ function default_1(server) {
                 });
         }
         res.end(response);
+    });
+    app.get('/characteristics', function (req, res) {
+        res.header('Content-Type', 'application/hap+json');
+        if (!req.realSocket.isAuthenticated) {
+            res.status(400).end(JSON.stringify({
+                status: TLVEnums.statusCodes.insufficientPrivilege
+            }));
+            return;
+        }
+        var characteristics2Read = req.query.id.split(',');
+        var characteristics = [], allOK = true;
+        for (var _i = 0, characteristics2Read_1 = characteristics2Read; _i < characteristics2Read_1.length; _i++) {
+            var characteristic = characteristics2Read_1[_i];
+            characteristic = characteristic.split('.');
+            var accessoryID = parseInt(characteristic[0]), characteristicID = parseInt(characteristic[1]);
+            var object = {
+                aid: accessoryID,
+                iid: characteristicID
+            };
+            var accessory = server.getAccessories()[accessoryID], error = null, value = null;
+            if (accessory) {
+                var characteristic_1 = accessory.getCharacteristic(characteristicID);
+                if (characteristic_1) {
+                    characteristic_1 = characteristic_1;
+                    if (characteristic_1.getHasValue())
+                        value = characteristic_1.getValue();
+                    else
+                        error = TLVEnums.statusCodes.isWriteonly;
+                    if (req.query.meta)
+                        characteristic_1.addMetadata(object);
+                    if (req.query.perms)
+                        object['perms'] = characteristic_1.getPermissions();
+                    if (req.query.type)
+                        object['type'] = characteristic_1.getType();
+                    if (req.query.ev)
+                        object['ev'] = characteristic_1.getHasNotifications();
+                }
+                else
+                    error = TLVEnums.statusCodes.notFound;
+            }
+            else
+                error = TLVEnums.statusCodes.notFound;
+            if (error) {
+                object['status'] = error;
+                allOK = false;
+            }
+            else {
+                object['value'] = value;
+                object['status'] = TLVEnums.statusCodes.OK;
+            }
+            characteristics.push(object);
+        }
+        if (allOK) {
+            for (var _a = 0, characteristics_1 = characteristics; _a < characteristics_1.length; _a++) {
+                var characteristic = characteristics_1[_a];
+                delete characteristic['status'];
+            }
+        }
+        res.status(allOK ? 200 : 207).end(JSON.stringify({
+            characteristics: characteristics
+        }));
+    });
+    app.put('/characteristics', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        var _this = this;
+        var characteristics, allOK;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    res.header('Content-Type', 'application/hap+json');
+                    if (!req.realSocket.isAuthenticated) {
+                        res.status(400).end(JSON.stringify({
+                            status: TLVEnums.statusCodes.insufficientPrivilege
+                        }));
+                        return [2];
+                    }
+                    characteristics = [], allOK = true;
+                    return [4, Promise.all(req.body.characteristics.map(function (characteristic) { return __awaiter(_this, void 0, void 0, function () {
+                            var accessoryID, characteristicID, value, event, authData, accessory, error, characteristic_2, e_1, object;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        accessoryID = parseInt(characteristic.aid), characteristicID = parseInt(characteristic.iid), value = characteristic.value, event = characteristic.ev, authData = characteristic.authData;
+                                        accessory = server.getAccessories()[accessoryID], error = null;
+                                        if (!accessory) return [3, 7];
+                                        characteristic_2 = accessory.getCharacteristic(characteristicID);
+                                        if (!characteristic_2) return [3, 5];
+                                        characteristic_2 = characteristic_2;
+                                        if (event && !characteristic_2.getHasNotifications())
+                                            error = TLVEnums.statusCodes.notificationIsNotSupported;
+                                        if (!!error) return [3, 4];
+                                        if (event)
+                                            characteristic_2.subscribe(req.realSocket.ID);
+                                        if (event === false)
+                                            characteristic_2.unsubscribe(req.realSocket.ID);
+                                        if (!(value != null && value != undefined)) return [3, 4];
+                                        _a.label = 1;
+                                    case 1:
+                                        _a.trys.push([1, 3, , 4]);
+                                        return [4, characteristic_2.writeValue(value, authData)];
+                                    case 2:
+                                        _a.sent();
+                                        return [3, 4];
+                                    case 3:
+                                        e_1 = _a.sent();
+                                        error = e_1;
+                                        return [3, 4];
+                                    case 4: return [3, 6];
+                                    case 5:
+                                        error = TLVEnums.statusCodes.notFound;
+                                        _a.label = 6;
+                                    case 6: return [3, 8];
+                                    case 7:
+                                        error = TLVEnums.statusCodes.notFound;
+                                        _a.label = 8;
+                                    case 8:
+                                        object = {
+                                            aid: accessoryID,
+                                            iid: characteristicID
+                                        };
+                                        if (error) {
+                                            object['status'] = error;
+                                            allOK = false;
+                                        }
+                                        else
+                                            object['status'] = TLVEnums.statusCodes.OK;
+                                        characteristics.push(object);
+                                        return [2];
+                                }
+                            });
+                        }); }))];
+                case 1:
+                    _a.sent();
+                    if (allOK)
+                        res.removeHeader('Content-Type');
+                    res.status(allOK ? 204 : 207).end(allOK ? null : JSON.stringify({
+                        characteristics: characteristics
+                    }));
+                    return [2];
+            }
+        });
+    }); });
+    app.get('/identify', function (req, res) {
+        res.header('Content-Type', 'application/hap+json');
+        if (server.config.statusFlag != 0x01) {
+            res.status(400).end(JSON.stringify({
+                status: TLVEnums.statusCodes.insufficientPrivilege
+            }));
+            return;
+        }
+        if (server.onIdentify) {
+            server.onIdentify(true, function (status) {
+                if (status == TLVEnums.statusCodes.OK) {
+                    res.removeHeader('Content-Type');
+                    res.status(204).end();
+                }
+                else
+                    res.status(500).end(JSON.stringify({
+                        status: status
+                    }));
+            });
+        }
+        else
+            res.status(500).end(JSON.stringify({
+                status: TLVEnums.statusCodes.communicationError
+            }));
     });
     return app;
 }
