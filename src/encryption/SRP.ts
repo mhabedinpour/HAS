@@ -11,7 +11,7 @@ type BigInt = any;
 
 export default class SRP {
     /**
-     * @property Username (I)
+     * @property SRP Username (I)
      * @private
      * @readonly
      */
@@ -25,20 +25,20 @@ export default class SRP {
     private readonly length: number = 3072;
 
     /**
-     * @property Password (p)
+     * @property SRP Password (p)
      * @public
      * @requires
      */
     public password: Buffer;
 
     /**
-     * @property Server Salt (s)
+     * @property SRP Server Salt (s)
      * @public
      */
     public salt: Buffer;
 
     /**
-     * @property ID of the socket which is related to this
+     * @property ID of the TCP socket which is related to this SRP
      * @public
      */
     public socketID: number;
@@ -134,7 +134,7 @@ export default class SRP {
 
 
     /**
-     * @method Creates SRP B Public (B) and B Private (b)
+     * @method Creates SRP B public (B) and B private (b)
      */
     private createB() {
         this.BPrivate = this.buffer2BigInt(crypto.randomBytes(32));
@@ -144,8 +144,8 @@ export default class SRP {
     }
 
     /**
-     * @method Creates SRP-6 Multiplier (k)
-     * @returns {any}
+     * @method Creates SRP-6 multiplier (k)
+     * @returns {BigInt}
      */
     private createK(): BigInt {
         return this.buffer2BigInt(crypto.createHash(this.hashFunction).update(this.fixLength(this.modules)).update(this.fixLength(this.generator)).digest());
@@ -162,14 +162,14 @@ export default class SRP {
     }
 
     /**
-     * @method Creates SRP Verifier (v)
+     * @method Creates SRP verifier (v)
      */
     private createVerifier() {
         this.verifier = this.bigInt2Buffer(this.generator.modPow(this.createXHash(), this.modules));
     }
 
     /**
-     * @method Returns SRP B Public (B)
+     * @method Returns SRP B public (B)
      */
     public getPublicKey(): Buffer {
         return this.BPublic;
@@ -191,35 +191,35 @@ export default class SRP {
     }
 
     /**
-     * @method Creates SRP Random Scrambling Parameter (u)
+     * @method Creates SRP random scrambling parameter (u)
      */
     private createRandomScrambling() {
         this.randomScrambling = this.buffer2BigInt(crypto.createHash(this.hashFunction).update(this.fixLength(this.APublic)).update(this.fixLength(this.BPublic)).digest());
     }
 
     /**
-     * @method Creates SRP Premaster Secret (S)
+     * @method Creates SRP premaster secret (S)
      */
     private createPremasterSecret() {
         this.premasterSecret = this.bigInt2Buffer(this.buffer2BigInt(this.APublic).multiply(this.buffer2BigInt(this.verifier).modPow(this.randomScrambling, this.modules)).modPow(this.BPrivate, this.modules).mod(this.modules));
     }
 
     /**
-     * @method Creates SRP Session Key (K)
+     * @method Creates SRP session key (K)
      */
     private createSessionKey() {
         this.sessionKey = crypto.createHash(this.hashFunction).update(this.premasterSecret).digest();
     }
 
     /**
-     * @method Returns SRP Session Key (K)
+     * @method Returns SRP session key (K)
      */
     public getSessionKey(): Buffer {
         return this.sessionKey;
     }
 
     /**
-     * @method Creates SRP M1 Proof
+     * @method Creates SRP M1 proof
      */
     private createM1Proof() {
         let headerHash = crypto.createHash(this.hashFunction).update(this.bigInt2Buffer(this.modules)).digest(),
@@ -231,7 +231,7 @@ export default class SRP {
     }
 
     /**
-     * @method Checks Client Proof
+     * @method Checks client proof
      * @param clientProof
      * @returns Boolean
      */
@@ -240,7 +240,7 @@ export default class SRP {
     }
 
     /**
-     * @method Creates SRP M2 Proof
+     * @method Creates SRP M2 proof
      * @returns Buffer
      */
     public getM2Proof(): Buffer {
@@ -249,7 +249,7 @@ export default class SRP {
     }
 
     /**
-     * @method Converts Buffer to BigInt Object
+     * @method Converts buffer to BigInt object
      * @param buffer
      */
     private buffer2BigInt(buffer: Buffer): BigInt {
@@ -257,7 +257,7 @@ export default class SRP {
     }
 
     /**
-     * @method Converts BigInt to Buffer
+     * @method Converts BigInt to buffer
      * @param buffer
      */
     private bigInt2Buffer(bigInt: BigInt): Buffer {
@@ -268,7 +268,7 @@ export default class SRP {
     }
 
     /**
-     * @method Fix length of a buffer
+     * @method Fixes length of a buffer
      * @param input
      * @param length
      * @returns {Buffer}

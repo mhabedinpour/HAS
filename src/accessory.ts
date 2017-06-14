@@ -10,7 +10,7 @@ import HAS from './HAS';
 export default class Accessory {
 
     /**
-     * @property ID of the accessory / must be unique
+     * @property ID of this accessory / must be unique
      * @private
      */
     private ID: number;
@@ -34,7 +34,7 @@ export default class Accessory {
     private IIDMap: { [index: number]: { serviceID: number, characteristicID: number } } = {};
 
     /**
-     * @property An instance to the accessory's server
+     * @property An instance to this accessory's server
      * @private
      */
     private server?: HAS;
@@ -52,7 +52,7 @@ export default class Accessory {
     }
 
     /**
-     * @method Returns Services
+     * @method Returns services of this accessory
      */
     public getServices(): { [index: number]: Service } {
         return this.services;
@@ -70,7 +70,7 @@ export default class Accessory {
     }
 
     /**
-     * @method Adds a service to the accessory
+     * @method Adds a service to this accessory
      * @param service
      */
     public addService(service: Service) {
@@ -109,7 +109,7 @@ export default class Accessory {
     }
 
     /**
-     * @method Adds a group of services to this service
+     * @method Adds a group of services to this accessory
      * @param services
      */
     public addServices(...services: Service[]) {

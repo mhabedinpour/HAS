@@ -141,9 +141,6 @@ export default class Config {
      */
     public privateKey: Buffer;
 
-    /**
-     * @method Creates new instance of class
-     */
     constructor(deviceName: string, deviceID: string, category: number, configDir: string, TCPPort: number, setupCode: string) {
         if (deviceName)
             this.deviceName = deviceName;
@@ -223,7 +220,7 @@ export default class Config {
     }
 
     /**
-     * @method Increases the CCN and save the config file
+     * @method Increases the CCN and saves the config file
      */
     public increaseCCN() {
         this.CCN++;

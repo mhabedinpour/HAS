@@ -63,7 +63,7 @@ export default function (server: HAS): express.Express {
                 return;
             }
 
-            //Too much failed tries / Server should be restarted
+            //Too much failed tries / Server needs to be restarted
             if (server.config.failedAuthCounter > 100) {
                 res.end(encodeTLVError(TLVEnums.TLVErrors.maxTries, currentState));
                 return;
@@ -305,7 +305,7 @@ export default function (server: HAS): express.Express {
     });
 
     app.post('/pairings', (req: any, res) => {
-        console.log(req.body, req.realSocket.ID);
+        //console.log(req.body, req.realSocket.ID);
         res.header('Content-Type', 'application/pairing+tlv8');
 
         let currentState = (req.body.TLV[TLVEnums.TLVValues.state]) ? parseInt(req.body.TLV[TLVEnums.TLVValues.state].toString('hex')) : 0x00;
@@ -354,7 +354,7 @@ export default function (server: HAS): express.Express {
     });
 
     app.get('/pairings', (req: any, res) => {
-        console.log(req.body, req.realSocket.ID);
+        //console.log(req.body, req.realSocket.ID);
         res.header('Content-Type', 'application/pairing+tlv8');
 
         let currentState = 1;

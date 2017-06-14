@@ -250,7 +250,6 @@ function default_1(server) {
         }));
     });
     app.post('/pairings', function (req, res) {
-        console.log(req.body, req.realSocket.ID);
         res.header('Content-Type', 'application/pairing+tlv8');
         var currentState = (req.body.TLV[TLVEnums.TLVValues.state]) ? parseInt(req.body.TLV[TLVEnums.TLVValues.state].toString('hex')) : 0x00;
         if (!req.realSocket.isAuthenticated || !req.realSocket.HAPEncryption.isAdmin) {
@@ -302,7 +301,6 @@ function default_1(server) {
             res.end();
     });
     app.get('/pairings', function (req, res) {
-        console.log(req.body, req.realSocket.ID);
         res.header('Content-Type', 'application/pairing+tlv8');
         var currentState = 1;
         if (!req.realSocket.isAuthenticated || !req.realSocket.HAPEncryption.isAdmin) {

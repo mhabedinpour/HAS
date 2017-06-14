@@ -298,6 +298,10 @@ export default class TCP extends EventEmitter {
             connection.emit('close');
     }
 
+    /**
+     * @method Revokes active sessions based on clientID
+     * @param clientID
+     */
     public revokeConnections(clientID: string) {
         for (let index in this.connections) {
             let connection = this.connections[index];

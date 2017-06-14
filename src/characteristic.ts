@@ -11,7 +11,7 @@ export type ValueUnit = 'celsius' | 'percantage' | 'arcdegrees' | 'lux' | 'secon
 
 export default class Characteristic {
     /**
-     * @property ID of the characteristic / must be unique at service level
+     * @property ID of this characteristic / must be unique at service level
      * @private
      */
     private ID: number;
@@ -185,7 +185,7 @@ export default class Characteristic {
     }
 
     /**
-     * @method Whether or not this characteristic value has a length
+     * @method Whether or not this characteristic's value has a length
      * @returns {boolean}
      */
     private hasLength(): boolean {
@@ -195,7 +195,7 @@ export default class Characteristic {
     }
 
     /**
-     * @method Whether or not this characteristic value is a buffer
+     * @method Whether or not this characteristic's value is a buffer
      * @returns {boolean}
      */
     private isBuffer(): boolean {

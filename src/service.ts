@@ -9,7 +9,7 @@ import Characteristic from './Characteristic';
 
 export default class Service {
     /**
-     * @property ID of the service / must be unique at accessory level
+     * @property ID of this service / must be unique at accessory level
      * @private
      */
     private ID: number;
@@ -21,7 +21,7 @@ export default class Service {
     private type: string;
 
     /**
-     * @property List of characteristics of the service
+     * @property List of characteristics of this service
      * @private
      */
     private characteristics: { [index: number]: Characteristic } = {};
@@ -39,7 +39,7 @@ export default class Service {
     private isHidden: boolean = false;
 
     /**
-     * @property An instance to the service's accessory
+     * @property An instance to this service's accessory
      * @private
      */
     private accessory?: Accessory;
@@ -63,7 +63,7 @@ export default class Service {
     }
 
     /**
-     * @method Returns ID of the service
+     * @method Returns ID of this service
      * @returns {number}
      */
     public getID(): number {
@@ -71,14 +71,14 @@ export default class Service {
     }
 
     /**
-     * @method Returns Characteristics
+     * @method Returns characteristics of this service
      */
     public getCharacteristics(): { [index: number]: Characteristic } {
         return this.characteristics;
     }
 
     /**
-     * @method Sets the accessory which is related to the service
+     * @method Sets the accessory which is related to this service
      * @param accessory
      */
     public setAccessory(accessory: Accessory) {

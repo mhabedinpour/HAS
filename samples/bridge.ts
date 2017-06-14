@@ -1,5 +1,5 @@
 /**
- * @file A simple light bulb sample
+ * @file A simple Homekit bridge sample
  * @author MohammadHossein Abedinpour <abedinpourmh@gmail.com>
  * @licence Apache2
  */
