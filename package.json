@@ -1,5 +1,5 @@
 {
-  "name": "has",
+  "name": "has-node",
   "version": "0.0.1",
   "description": "Homekit Accessory Server",
   "main": "app.js",

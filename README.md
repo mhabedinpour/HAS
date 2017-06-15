@@ -1,11 +1,19 @@
 # HAS
 ### Homekit Accessory Server
 
+[![npm version](https://badge.fury.io/js/has-node.svg)](https://badge.fury.io/js/has-node)
+
 HAS is a Homekit accessory server written in NodeJS which lets you create your own Homekit-enabled accessories on your computer, Raspberry Pi or everything else which can run NodeJS.
 
 It provides you a rich and simple API to create your own servers, accessories, services and characteristic.
 
 This project is based on Homekit accessory protocol(HAP) specification which you can find it [here](https://developer.apple.com/homekit/specification/)(Requires Apple developer account).
+
+# Installation
+
+```
+npm install has-node 
+```
 
 # Sample
 
