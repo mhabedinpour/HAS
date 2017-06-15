@@ -7,7 +7,7 @@ It provides you a rich and simple API to create your own servers, accessories, s
 
 This project is based on Homekit accessory protocol(HAP) specification which you can find it [here](https://developer.apple.com/homekit/specification/)(Requires Apple developer account).
 
-#Sample
+# Sample
 
 ```js
 import * as HAS from 'HAS';
@@ -48,7 +48,7 @@ server.startServer();
 
 _Check out [samples folder](https://github.com/abedinpour/HAS/tree/master/samples) for more samples._
 
-#API
+# API
 
 **Categories**
 
