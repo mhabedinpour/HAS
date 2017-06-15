@@ -138,17 +138,19 @@ export default class HAS {
      * @method Publishes Bonjour service
      */
     public updateBonjour() {
-        if (this.bonjourService)
-            this.bonjourService.stop();
-        this.bonjourService = this.bonjour.publish({
-            name: this.config.deviceName,
-            type: 'hap',
-            port: this.config.TCPPort,
-            txt: this.config.getTXTRecords(),
-        });
-        this.bonjourService.on('up', () => {
-            console.log('Bonjour is up');
-        });
+        setTimeout(() => {
+            if (this.bonjourService)
+                this.bonjourService.stop();
+            this.bonjourService = this.bonjour.publish({
+                name: this.config.deviceName,
+                type: 'hap',
+                port: this.config.TCPPort,
+                txt: this.config.getTXTRecords(),
+            });
+            this.bonjourService.on('up', () => {
+                console.log('Bonjour is up');
+            });
+        }, this.bonjourService ? 60000 : 0);
     }
 
     /**

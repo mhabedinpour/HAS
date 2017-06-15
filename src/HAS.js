@@ -45,17 +45,20 @@ var HAS = (function () {
         this.isRunning = false;
     };
     HAS.prototype.updateBonjour = function () {
-        if (this.bonjourService)
-            this.bonjourService.stop();
-        this.bonjourService = this.bonjour.publish({
-            name: this.config.deviceName,
-            type: 'hap',
-            port: this.config.TCPPort,
-            txt: this.config.getTXTRecords(),
-        });
-        this.bonjourService.on('up', function () {
-            console.log('Bonjour is up');
-        });
+        var _this = this;
+        setTimeout(function () {
+            if (_this.bonjourService)
+                _this.bonjourService.stop();
+            _this.bonjourService = _this.bonjour.publish({
+                name: _this.config.deviceName,
+                type: 'hap',
+                port: _this.config.TCPPort,
+                txt: _this.config.getTXTRecords(),
+            });
+            _this.bonjourService.on('up', function () {
+                console.log('Bonjour is up');
+            });
+        }, this.bonjourService ? 60000 : 0);
     };
     HAS.prototype.addAccessory = function (accessory) {
         var accessoryID = accessory.getID();

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var HAS = require("../");
-var config = new HAS.Config('NodeJS Bridge', '80:E6:B6:63:BC:2C', HAS.categories.bridge, __dirname + '/bridge.json', 8090, '200-20-200');
+var config = new HAS.Config('NodeJS Bridge2', '81:E6:B6:43:BC:2C', HAS.categories.bridge, __dirname + '/bridge.json', 8090, '200-20-200');
 var server = new HAS.Server(config);
 var bridge = new HAS.Accessory(1);
 var identify = HAS.predefined.Identify(1, undefined, function (value, callback) {
