@@ -18,6 +18,7 @@ export default class Characteristic {
     private validRangeValues?;
     private isHidden?;
     private hasNotifications?;
+    private silentNotifications?;
     private hasValue?;
     private isReadonly?;
     private additionalAuthorization?;
@@ -25,7 +26,7 @@ export default class Characteristic {
     private description?;
     private subscribers;
     onWrite: OnWrite;
-    constructor(ID: number, type: string, valueFormat: ValueFormat, isHidden?: boolean, hasNotifications?: boolean, hasValue?: boolean, isReadonly?: boolean, additionalAuthorization?: boolean, valueUnit?: ValueUnit, description?: string, minValue?: number, maxValue?: number, stepValue?: number, maxLength?: number, validValues?: number[], validRangeValues?: number[]);
+    constructor(ID: number, type: string, valueFormat: ValueFormat, isHidden?: boolean, hasNotifications?: boolean, hasValue?: boolean, isReadonly?: boolean, additionalAuthorization?: boolean, valueUnit?: ValueUnit, description?: string, minValue?: number, maxValue?: number, stepValue?: number, maxLength?: number, validValues?: number[], validRangeValues?: number[], silentNotifications?: boolean);
     getID(): number;
     getType(): string;
     getHasValue(): boolean;

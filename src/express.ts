@@ -368,7 +368,7 @@ export default function (server: HAS): express.Express {
 
     //List of Pairings
     app.get('/pairings', (req: any, res) => {
-        //console.log(req.body, req.realSocket.ID);
+        console.log(req.body, req.realSocket.ID);
         res.header('Content-Type', 'application/pairing+tlv8');
 
         let currentState = 1;

@@ -29,6 +29,10 @@ fan.addServices(HAS.predefined.AccessoryInformation(1, [fanIdentify, fanManufact
 let temperature = HAS.predefined.CurrentTemperature(1, 30.00);
 fan.addServices(HAS.predefined.TemperatureSensor(2, [temperature]));
 
+setInterval(() => {
+    temperature.setValue(temperature.getValue() + 1);
+}, 7000);
+
 let on = HAS.predefined.On(1, false, (value, callback) => {
     console.log('Fan Status', value);
     callback(HAS.statusCodes.OK);

@@ -91,6 +91,12 @@ export default class Characteristic {
     private hasNotifications?: boolean;
 
     /**
+     * @property Whether or not this characteristic notifications are silent
+     * @private
+     */
+    private silentNotifications?: boolean;
+
+    /**
      * @property Whether or not this characteristic has a value
      * @private
      */
@@ -132,7 +138,7 @@ export default class Characteristic {
      */
     public onWrite: OnWrite;
 
-    constructor(ID: number, type: string, valueFormat: ValueFormat, isHidden?: boolean, hasNotifications?: boolean, hasValue?: boolean, isReadonly?: boolean, additionalAuthorization?: boolean, valueUnit?: ValueUnit, description?: string, minValue?: number, maxValue?: number, stepValue?: number, maxLength?: number, validValues?: number[], validRangeValues?: number[]) {
+    constructor(ID: number, type: string, valueFormat: ValueFormat, isHidden?: boolean, hasNotifications?: boolean, hasValue?: boolean, isReadonly?: boolean, additionalAuthorization?: boolean, valueUnit?: ValueUnit, description?: string, minValue?: number, maxValue?: number, stepValue?: number, maxLength?: number, validValues?: number[], validRangeValues?: number[], silentNotifications?: boolean) {
         this.ID = ID;
 
         this.type = type;
@@ -170,6 +176,8 @@ export default class Characteristic {
         this.isReadonly = isReadonly;
 
         this.additionalAuthorization = additionalAuthorization;
+
+        this.silentNotifications = silentNotifications;
     }
 
     /**
@@ -478,7 +486,7 @@ export default class Characteristic {
         if (value !== null && value !== undefined)
             object['value'] = value;
 
-        if (this.hasNotifications)
+        if (this.hasNotifications && !this.silentNotifications)
             object['ev'] = true;
 
         if (this.description)

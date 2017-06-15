@@ -11,6 +11,9 @@ var fanIdentify = HAS.predefined.Identify(1, undefined, function (value, callbac
 fan.addServices(HAS.predefined.AccessoryInformation(1, [fanIdentify, fanManufacturer, fanModel, fanName, fanSerialNumber, fanFirmwareVersion]));
 var temperature = HAS.predefined.CurrentTemperature(1, 30.00);
 fan.addServices(HAS.predefined.TemperatureSensor(2, [temperature]));
+setInterval(function () {
+    temperature.setValue(temperature.getValue() + 1);
+}, 7000);
 var on = HAS.predefined.On(1, false, function (value, callback) {
     console.log('Fan Status', value);
     callback(HAS.statusCodes.OK);

@@ -343,6 +343,7 @@ function default_1(server) {
             res.end();
     });
     app.get('/pairings', function (req, res) {
+        console.log(req.body, req.realSocket.ID);
         res.header('Content-Type', 'application/pairing+tlv8');
         var currentState = 1;
         if (!req.realSocket.isAuthenticated || !req.realSocket.HAPEncryption.isAdmin) {

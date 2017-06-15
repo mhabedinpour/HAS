@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var values_1 = require("./TLV/values");
 var Characteristic = (function () {
-    function Characteristic(ID, type, valueFormat, isHidden, hasNotifications, hasValue, isReadonly, additionalAuthorization, valueUnit, description, minValue, maxValue, stepValue, maxLength, validValues, validRangeValues) {
+    function Characteristic(ID, type, valueFormat, isHidden, hasNotifications, hasValue, isReadonly, additionalAuthorization, valueUnit, description, minValue, maxValue, stepValue, maxLength, validValues, validRangeValues, silentNotifications) {
         this.subscribers = [];
         this.ID = ID;
         this.type = type;
@@ -25,6 +25,7 @@ var Characteristic = (function () {
         this.hasValue = hasValue;
         this.isReadonly = isReadonly;
         this.additionalAuthorization = additionalAuthorization;
+        this.silentNotifications = silentNotifications;
     }
     Characteristic.prototype.getID = function () {
         return this.ID;
@@ -218,7 +219,7 @@ var Characteristic = (function () {
         };
         if (value !== null && value !== undefined)
             object['value'] = value;
-        if (this.hasNotifications)
+        if (this.hasNotifications && !this.silentNotifications)
             object['ev'] = true;
         if (this.description)
             object['description'] = this.description;
