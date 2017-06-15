@@ -8,7 +8,8 @@ import Service from './service';
 import {statusCodes} from './TLV/values';
 
 export type ValueFormat = 'bool' | 'uint8' | 'uint16' | 'uint32' | 'int' | 'float' | 'string' | 'tlv8' | 'data';
-export type ValueUnit = 'celsius' | 'percantage' | 'arcdegrees' | 'lux' | 'seconds';
+export type ValueUnit = 'celsius' | 'percentage' | 'arcdegrees' | 'lux' | 'seconds';
+export type OnWrite = (value: any, callback: (status: statusCodes) => void, authData?: Buffer) => void
 
 export default class Characteristic {
     /**
@@ -129,7 +130,7 @@ export default class Characteristic {
      * @property Write handler for this characteristic
      * @public
      */
-    public onWrite: (value: any, callback: (status: statusCodes) => void, authData?: Buffer) => void;
+    public onWrite: OnWrite;
 
     constructor(ID: number, type: string, valueFormat: ValueFormat, isHidden?: boolean, hasNotifications?: boolean, hasValue?: boolean, isReadonly?: boolean, additionalAuthorization?: boolean, valueUnit?: ValueUnit, description?: string, minValue?: number, maxValue?: number, stepValue?: number, maxLength?: number, validValues?: number[], validRangeValues?: number[]) {
         this.ID = ID;
@@ -145,7 +146,7 @@ export default class Characteristic {
         if (this.isNumeric()) {
             this.minValue = minValue;
 
-            this.maxLength = maxValue;
+            this.maxValue = maxValue;
 
             this.stepValue = stepValue;
 
@@ -252,7 +253,7 @@ export default class Characteristic {
         if (!checkValue || this.isValid(value)) {
             this.value = value;
 
-            if (this.service && this.service.getAccessory() && this.service.getAccessory().getServer()) {
+            if (this.hasNotifications && this.subscribers.length && this.service && this.service.getAccessory() && this.service.getAccessory().getServer()) {
                 this.subscribers = this.service.getAccessory().getServer().TCPServer.sendNotification(this.subscribers, JSON.stringify({
                     characteristics: [{
                         aid: this.service.getAccessory().getID(),
@@ -320,9 +321,6 @@ export default class Characteristic {
                 return false;
 
             if (this.maxValue && value > this.maxValue)
-                return false;
-
-            if (this.stepValue && value % this.stepValue != 0)
                 return false;
 
             if (this.validValues && this.validValues.indexOf(value) <= -1)

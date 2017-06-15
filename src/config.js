@@ -73,10 +73,18 @@ var Config = (function () {
             privateKey: this.privateKey.toString('hex')
         }), 'utf8');
     };
-    Config.prototype.increaseCCN = function () {
+    Config.prototype.setServer = function (server) {
+        if (this.server)
+            throw new Error('Server is already set.');
+        this.server = server;
+    };
+    Config.prototype.increaseCCN = function (updateBonjour) {
+        if (updateBonjour === void 0) { updateBonjour = true; }
         this.CCN++;
         if (this.CCN > 4294967295)
             this.CCN = 1;
+        if (updateBonjour)
+            this.server.updateBonjour();
         this.writeConfig();
     };
     Config.prototype.getTXTRecords = function () {
@@ -100,8 +108,9 @@ var Config = (function () {
             publicKey: publicKey.toString('hex'),
             isAdmin: isAdmin
         };
-        if (isAdmin)
+        if (isAdmin) {
             this.statusFlag = 0x00;
+        }
         this.writeConfig();
     };
     Config.prototype.removePairing = function (ID) {
@@ -110,8 +119,10 @@ var Config = (function () {
             throw new Error('ID does NOT exists.');
         }
         delete this.pairings[IDString];
-        if (Object.keys(this.pairings).length <= 0)
+        if (Object.keys(this.pairings).length <= 0) {
             this.statusFlag = 0x01;
+            this.server.updateBonjour();
+        }
         this.writeConfig();
     };
     Config.prototype.updatePairing = function (ID, isAdmin) {

@@ -11,7 +11,7 @@ var Characteristic = (function () {
         this.description = description;
         if (this.isNumeric()) {
             this.minValue = minValue;
-            this.maxLength = maxValue;
+            this.maxValue = maxValue;
             this.stepValue = stepValue;
             this.validValues = validValues;
             this.validRangeValues = validRangeValues;
@@ -62,7 +62,7 @@ var Characteristic = (function () {
             return;
         if (!checkValue || this.isValid(value)) {
             this.value = value;
-            if (this.service && this.service.getAccessory() && this.service.getAccessory().getServer()) {
+            if (this.hasNotifications && this.subscribers.length && this.service && this.service.getAccessory() && this.service.getAccessory().getServer()) {
                 this.subscribers = this.service.getAccessory().getServer().TCPServer.sendNotification(this.subscribers, JSON.stringify({
                     characteristics: [{
                             aid: this.service.getAccessory().getID(),
@@ -101,8 +101,6 @@ var Characteristic = (function () {
             if (this.minValue && value < this.minValue)
                 return false;
             if (this.maxValue && value > this.maxValue)
-                return false;
-            if (this.stepValue && value % this.stepValue != 0)
                 return false;
             if (this.validValues && this.validValues.indexOf(value) <= -1)
                 return false;

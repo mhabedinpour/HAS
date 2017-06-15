@@ -11,6 +11,7 @@ import * as express from 'express';
 import TCP from './TCP';
 import Accessory from './accessory';
 import {statusCodes} from './TLV/values';
+const Bonjour = require('bonjour');
 
 //HAP is using HTTP in it's own way. To meet its requirements and also not rewriting the whole HTTP module, We will create a TCP server which iOS will connect to it and we will do HAP stuffs in this layer.
 //We also will create an HTTP server which will process the iOS requests and generate response for them.
@@ -79,12 +80,14 @@ export default class HAS {
      * @param config - Instance of configuration helper
      */
     constructor(config: Config) {
-        this.bonjour = require('bonjour')();
+        this.bonjour = Bonjour();
 
         if (config)
             this.config = config;
         else
             throw  new Error('Invalid HAS Config');
+
+        this.config.setServer(this);
 
         this.expressApp = expressApp(this);
         this.HTTPServer = HTTP.createServer(this.expressApp);
@@ -99,15 +102,7 @@ export default class HAS {
         if (Object.keys(this.accessories).length <= 0)
             throw new Error('Server must have at least one accessory.');
 
-        this.bonjourService = this.bonjour.publish({
-            name: this.config.deviceName,
-            type: 'hap',
-            port: this.config.TCPPort,
-            txt: this.config.getTXTRecords(),
-        });
-        this.bonjourService.on('up', () => {
-            console.log('Bonjour is up');
-        });
+        this.updateBonjour();
 
         this.HTTPServer.timeout = 0; //TCP connection should stay open as lang as it wants to
         this.HTTPServer.listen(0);
@@ -122,7 +117,7 @@ export default class HAS {
 
         this.isRunning = true;
 
-        this.config.increaseCCN();
+        this.config.increaseCCN(false);
     }
 
     /**
@@ -140,7 +135,24 @@ export default class HAS {
     }
 
     /**
-     * @method Adds a accessory to this server
+     * @method Publishes Bonjour service
+     */
+    public updateBonjour() {
+        if (this.bonjourService)
+            this.bonjourService.stop();
+        this.bonjourService = this.bonjour.publish({
+            name: this.config.deviceName,
+            type: 'hap',
+            port: this.config.TCPPort,
+            txt: this.config.getTXTRecords(),
+        });
+        this.bonjourService.on('up', () => {
+            console.log('Bonjour is up');
+        });
+    }
+
+    /**
+     * @method Adds an accessory to this server
      * @param accessory
      */
     public addAccessory(accessory: Accessory) {
@@ -163,6 +175,20 @@ export default class HAS {
 
         this.accessories[accessoryID] = accessory;
         accessory.setServer(this);
+
+        if (this.isRunning)
+            this.config.increaseCCN();
+    }
+
+    /**
+     * @method Removes an accessory from this server
+     * @param accessoryID
+     */
+    public removeAccessory(accessoryID: number) {
+        if (!this.accessories[accessoryID])
+            throw new Error('Accessory ID does not exists: ' + accessoryID);
+
+        delete this.accessories[accessoryID];
 
         if (this.isRunning)
             this.config.increaseCCN();

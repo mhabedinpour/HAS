@@ -8,6 +8,7 @@ import * as FS from 'fs';
 import SRP from './encryption/SRP';
 import * as crypto from 'crypto';
 const Ed25519 = require('ed25519');
+import HAS from './HAS';
 
 export interface Pairing {
     publicKey: string,
@@ -141,6 +142,12 @@ export default class Config {
      */
     public privateKey: Buffer;
 
+    /**
+     * @property An instance to this object's server
+     * @private
+     */
+    private server: HAS;
+
     constructor(deviceName: string, deviceID: string, category: number, configDir: string, TCPPort: number, setupCode: string) {
         if (deviceName)
             this.deviceName = deviceName;
@@ -220,13 +227,25 @@ export default class Config {
     }
 
     /**
+     * @method Sets the HAS object which is related to this object
+     * @param server
+     */
+    public setServer(server: HAS) {
+        if (this.server)
+            throw new Error('Server is already set.');
+
+        this.server = server;
+    }
+
+    /**
      * @method Increases the CCN and saves the config file
      */
-    public increaseCCN() {
+    public increaseCCN(updateBonjour: boolean = true) {
         this.CCN++;
         if (this.CCN > 4294967295)
             this.CCN = 1;
-        //TODO: Send notification to clients
+        if (updateBonjour)
+            this.server.updateBonjour();
         this.writeConfig();
     }
 
@@ -267,8 +286,10 @@ export default class Config {
         };
 
         //Update status flag to avoid new pairings
-        if (isAdmin)
+        if (isAdmin) {
             this.statusFlag = 0x00;
+            //this.server.updateBonjour();
+        }
 
         this.writeConfig();
     }
@@ -287,8 +308,10 @@ export default class Config {
         delete this.pairings[IDString];
 
         //Update status flag to make pairing available again
-        if (Object.keys(this.pairings).length <= 0)
+        if (Object.keys(this.pairings).length <= 0) {
             this.statusFlag = 0x01;
+            this.server.updateBonjour();
+        }
 
         this.writeConfig();
     }

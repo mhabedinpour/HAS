@@ -1,5 +1,6 @@
 /// <reference types="node" />
 import SRP from './encryption/SRP';
+import HAS from './HAS';
 export interface Pairing {
     publicKey: string;
     isAdmin: boolean;
@@ -25,10 +26,12 @@ export default class Config {
     private pairings;
     publicKey: Buffer;
     privateKey: Buffer;
+    private server;
     constructor(deviceName: string, deviceID: string, category: number, configDir: string, TCPPort: number, setupCode: string);
     private readConfig();
     private writeConfig();
-    increaseCCN(): void;
+    setServer(server: HAS): void;
+    increaseCCN(updateBonjour?: boolean): void;
     getTXTRecords(): object;
     addPairing(ID: Buffer, publicKey: Buffer, isAdmin: boolean): void;
     removePairing(ID: Buffer): void;

@@ -5,4 +5,5 @@ import Service from './src/service';
 import Characteristic from './src/characteristic';
 import { categories } from './src/categories';
 import { statusCodes } from './src/TLV/values';
-export { HAS as Server, Config, Accessory, Service, Characteristic, categories, statusCodes };
+import * as predefined from './src/predefinedTypes/predefined';
+export { HAS as Server, Config, Accessory, Service, Characteristic, categories, statusCodes, predefined };

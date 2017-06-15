@@ -31,7 +31,7 @@ var Accessory = (function () {
         if (Object.keys(service.getCharacteristics()).length <= 0)
             throw new Error('Service must contain at least one characteristic: ' + serviceID);
         if (this.services[serviceID])
-            throw new Error('Service ID already exists.');
+            throw new Error('Service ID already exists: ' + serviceID);
         if (service.getIsPrimary() && this.primaryService)
             throw new Error('Primary service already exists.');
         if (service.getLinkedServices().length) {

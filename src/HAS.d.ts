@@ -15,7 +15,9 @@ export default class HAS {
     constructor(config: Config);
     startServer(): void;
     stopServer(): void;
+    updateBonjour(): void;
     addAccessory(accessory: Accessory): void;
+    removeAccessory(accessoryID: number): void;
     getAccessories(): {
         [index: number]: Accessory;
     };
