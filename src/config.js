@@ -110,6 +110,7 @@ var Config = (function () {
         };
         if (isAdmin) {
             this.statusFlag = 0x00;
+            this.server.updateBonjour();
         }
         this.writeConfig();
     };

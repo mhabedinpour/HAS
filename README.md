@@ -18,7 +18,7 @@ npm install has-node
 # Sample
 
 ```js
-import * as HAS from 'HAS';
+import * as HAS from 'has-node';
 
 let config = new HAS.Config('NodeJS Fan', '82:E6:B6:63:BC:2C', HAS.categories.fan, __dirname + '/fan.json', 8091, '200-20-200');
 

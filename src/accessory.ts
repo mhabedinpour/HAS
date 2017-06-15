@@ -168,7 +168,7 @@ export default class Accessory {
                 characteristic.iid = IID;
             }
 
-            //Both serviceID and characteristicID is in the range [1, 999]. Max(Pairing(serviceID, characteristicID)) would be 1,998,000
+            //Both serviceID and characteristicID are in the range [1, 999]. Max(Pairing(serviceID, characteristicID)) would be 1,998,000
             //To avoid having duplicated IDs in serviceIDs and characteristicIDs, we will add 2000000 to every service ID.
             //1 is the ID of the information service and can not be changed / It is also less than Min(Pairing(serviceID, characteristicID)), Which would not be a problem
             JSON.iid = JSON.iid == 1 ? 1 : 2000000 + JSON.iid;

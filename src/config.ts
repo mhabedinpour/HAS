@@ -288,7 +288,7 @@ export default class Config {
         //Update status flag to avoid new pairings
         if (isAdmin) {
             this.statusFlag = 0x00;
-            //this.server.updateBonjour();
+            this.server.updateBonjour();
         }
 
         this.writeConfig();
