@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var HAS = require("../");
-var config = new HAS.Config('NodeJS Fan+TemperatureSensor', '83:E6:B6:63:BC:2C', HAS.categories.fan, __dirname + '/fan+temperatureSensor.json', 8091, '200-20-200');
+var config = new HAS.Config('NodeJS Fan+TemperatureSensor', '83:E6:B6:63:BC:2C', HAS.categories.fan, __dirname + '/fan+temperatureSensor.json', 8097, '200-20-200');
 var server = new HAS.Server(config);
 var fan = new HAS.Accessory(1);
 var fanIdentify = HAS.predefined.Identify(1, undefined, function (value, callback) {

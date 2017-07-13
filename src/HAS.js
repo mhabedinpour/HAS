@@ -22,6 +22,7 @@ var HAS = (function () {
         var _this = this;
         if (Object.keys(this.accessories).length <= 0)
             throw new Error('Server must have at least one accessory.');
+        this.config.increaseCCN(false);
         this.updateBonjour();
         this.HTTPServer.timeout = 0;
         this.HTTPServer.listen(0);
@@ -33,7 +34,6 @@ var HAS = (function () {
             console.log("TCP Server Listening on " + _this.config.TCPPort);
         });
         this.isRunning = true;
-        this.config.increaseCCN(false);
     };
     HAS.prototype.stopServer = function () {
         if (this.bonjourService)
@@ -45,20 +45,22 @@ var HAS = (function () {
         this.isRunning = false;
     };
     HAS.prototype.updateBonjour = function () {
-        var _this = this;
-        setTimeout(function () {
-            if (_this.bonjourService)
-                _this.bonjourService.stop();
-            _this.bonjourService = _this.bonjour.publish({
-                name: _this.config.deviceName,
+        if (!this.bonjourService) {
+            this.bonjourService = this.bonjour.publish({
+                name: this.config.deviceName,
                 type: 'hap',
-                port: _this.config.TCPPort,
-                txt: _this.config.getTXTRecords(),
+                port: this.config.TCPPort,
+                txt: this.config.getTXTRecords(),
             });
-            _this.bonjourService.on('up', function () {
+            this.bonjourService.on('up', function () {
                 console.log('Bonjour is up');
             });
-        }, this.bonjourService ? 60000 : 0);
+        }
+        else {
+            this.bonjourService.txt = this.config.getTXTRecords();
+            this.bonjour._server.unregister(this.bonjourService._records());
+            this.bonjour._server.register(this.bonjourService._records());
+        }
     };
     HAS.prototype.addAccessory = function (accessory) {
         var accessoryID = accessory.getID();

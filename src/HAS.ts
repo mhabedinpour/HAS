@@ -102,6 +102,8 @@ export default class HAS {
         if (Object.keys(this.accessories).length <= 0)
             throw new Error('Server must have at least one accessory.');
 
+        this.config.increaseCCN(false);
+
         this.updateBonjour();
 
         this.HTTPServer.timeout = 0; //TCP connection should stay open as lang as it wants to
@@ -116,8 +118,6 @@ export default class HAS {
         });
 
         this.isRunning = true;
-
-        this.config.increaseCCN(false);
     }
 
     /**
@@ -138,9 +138,8 @@ export default class HAS {
      * @method Publishes Bonjour service
      */
     public updateBonjour() {
-        setTimeout(() => {
-            if (this.bonjourService)
-                this.bonjourService.stop();
+        if (!this.bonjourService) {
+            //Publish new service
             this.bonjourService = this.bonjour.publish({
                 name: this.config.deviceName,
                 type: 'hap',
@@ -150,7 +149,12 @@ export default class HAS {
             this.bonjourService.on('up', () => {
                 console.log('Bonjour is up');
             });
-        }, this.bonjourService ? 60000 : 0);
+        } else {
+            //Update existing server TXT records
+            this.bonjourService.txt = this.config.getTXTRecords();
+            this.bonjour._server.unregister(this.bonjourService._records());
+            this.bonjour._server.register(this.bonjourService._records());
+        }
     }
 
     /**

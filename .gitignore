@@ -62,3 +62,6 @@ typings/
 
 # Samples JSON Configuration Files
 samples/*.json
+
+#HAP Specification
+HAP-Specification-Non-Commercial-Version.pdf

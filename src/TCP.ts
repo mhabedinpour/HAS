@@ -129,9 +129,9 @@ export default class TCP extends EventEmitter {
                     }
                 }
                 data = result;
-                //console.log(data.toString('ascii'));
             }
             let {firstLine, rest} = this.readAndDeleteFirstLineOfBuffer(data);
+            //console.log(data.toString('ascii'));
             this.write(Buffer.concat([firstLine, delimiter, Buffer.from(`X-Real-Socket-ID: ${socket.ID}`, 'ascii'), delimiter, rest]));
         });
 

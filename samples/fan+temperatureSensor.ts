@@ -6,7 +6,7 @@
 
 import * as HAS from '../';
 
-let config = new HAS.Config('NodeJS Fan+TemperatureSensor', '83:E6:B6:63:BC:2C', HAS.categories.fan, __dirname + '/fan+temperatureSensor.json', 8091, '200-20-200');
+let config = new HAS.Config('NodeJS Fan+TemperatureSensor', '83:E6:B6:63:BC:2C', HAS.categories.fan, __dirname + '/fan+temperatureSensor.json', 8097, '200-20-200');
 
 let server = new HAS.Server(config);
 
