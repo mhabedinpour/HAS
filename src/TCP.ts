@@ -236,6 +236,8 @@ export default class TCP extends EventEmitter {
             connection.destroy();
         });
 
+        connection.setTimeout(0);
+
         connection.on('data', (data: Buffer) => {
             let currentLine = '',
                 prevs = Buffer.alloc(0),

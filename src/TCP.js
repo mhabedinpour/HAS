@@ -147,6 +147,7 @@ var TCP = (function (_super) {
             connection.end();
             connection.destroy();
         });
+        connection.setTimeout(0);
         connection.on('data', function (data) {
             var currentLine = '', prevs = Buffer.alloc(0), rests = data;
             while (true) {
