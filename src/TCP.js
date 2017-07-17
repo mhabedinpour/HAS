@@ -15,6 +15,7 @@ var NET = require("net");
 var ChaCha = require("./encryption/ChaCha20Poly1305AEAD");
 var ExtendedBuffer = require('extended-buffer');
 var delimiter = Buffer.from('\r\n');
+var debug = require('debug')('TCP');
 var TCP = (function (_super) {
     __extends(TCP, _super);
     function TCP(server) {
@@ -34,9 +35,11 @@ var TCP = (function (_super) {
         this.TCPServer.listen(this.TCPPort);
         this.TCPServer.on('listening', function () {
             _this.emit('listening', _this.TCPPort);
+            debug('Listening on ' + _this.TCPPort);
         });
         this.TCPServer.on('error', function (error) {
             console.error(error);
+            debug(error);
         });
         this.TCPServer.on('connection', this.onConnection.bind(this));
         for (var i = 0; i < this.TCPConnectionPoolMax; i++)
@@ -46,7 +49,9 @@ var TCP = (function (_super) {
         var _this = this;
         socket.ID = "" + new Date().getTime() + Math.floor(Math.random() * 1000);
         this.connections[socket.ID] = socket;
+        debug(socket.ID + " connected");
         socket.on('close', function () {
+            debug(socket.ID + " disconnected");
             delete _this.connections[socket.ID];
             if (_this.server.config.SRP && _this.server.config.SRP.socketID === socket.ID) {
                 _this.server.config.SRP = undefined;
@@ -56,6 +61,7 @@ var TCP = (function (_super) {
             socket.destroy();
         });
         socket.on('data', function (data) {
+            debug(socket.ID + " packet received");
             if (socket.isEncrypted) {
                 socket.hasReceivedEncryptedData = true;
                 var result = Buffer.alloc(0);
@@ -78,6 +84,7 @@ var TCP = (function (_super) {
         });
         socket.setTimeout(3600000);
         socket.on('timeout', function () {
+            debug(socket.ID + " timedout");
             socket.emit('close');
         });
         socket.keepAliveForEver = function () {
@@ -97,13 +104,15 @@ var TCP = (function (_super) {
                 }
                 buffer = result;
             }
+            debug(socket.ID + " packet sent");
             socket.write(buffer);
         };
         socket.sendNotification = function (notification) {
             var body = "EVENT/1.0 200 OK" + delimiter + "Content-Type: application/hap+json" + delimiter + "Content-Length: " + notification.length + delimiter + delimiter + notification;
             socket.safeWrite(Buffer.from(body));
         };
-        socket.on('error', function () {
+        socket.on('error', function (error) {
+            debug(error);
         });
     };
     TCP.prototype.createNonce = function (framesCounter) {
@@ -133,6 +142,7 @@ var TCP = (function (_super) {
         var _this = this;
         var connection = NET.createConnection(this.HTTPPort);
         connection.on('connect', function () {
+            debug('New socked connected.');
             connection.isConnected = true;
             if (connection.pendingWirte) {
                 connection.safeWrite(connection.pendingWirte);
@@ -143,12 +153,14 @@ var TCP = (function (_super) {
             connection.emit('close');
         });
         connection.on('close', function () {
+            debug("Socked disconnected. Remained: " + _this.TCPConnectionPool.length);
             _this.TCPConnectionPool.splice(_this.TCPConnectionPool.indexOf(connection), 1);
             connection.end();
             connection.destroy();
         });
         connection.setTimeout(0);
         connection.on('data', function (data) {
+            debug("Data received from HTTP.");
             var currentLine = '', prevs = Buffer.alloc(0), rests = data;
             while (true) {
                 var _a = _this.readAndDeleteFirstLineOfBuffer(rests), firstLine = _a.firstLine, rest = _a.rest;
@@ -170,8 +182,10 @@ var TCP = (function (_super) {
         });
         connection.safeWrite = function (buffer) {
             connection.isBusy = true;
-            if (connection.isConnected)
+            if (connection.isConnected) {
+                debug("Data sent to HTTP.");
                 connection.write(buffer);
+            }
             else {
                 connection.pendingWrite = connection.pendingWrite || Buffer.alloc(0);
                 connection.pendingWrite = Buffer.concat([connection.pendingWrite, buffer]);

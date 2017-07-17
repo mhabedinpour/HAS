@@ -11,6 +11,8 @@ const ExtendedBuffer = require('extended-buffer');
 
 const delimiter = Buffer.from('\r\n');
 
+const debug = require('debug')('TCP');
+
 export default class TCP extends EventEmitter {
 
     /**
@@ -75,10 +77,12 @@ export default class TCP extends EventEmitter {
 
         this.TCPServer.on('listening', () => {
             this.emit('listening', this.TCPPort);
+            debug('Listening on ' + this.TCPPort);
         });
 
         this.TCPServer.on('error', (error: any) => {
             console.error(error);
+            debug(error);
         });
 
         this.TCPServer.on('connection', this.onConnection.bind(this));
@@ -95,7 +99,10 @@ export default class TCP extends EventEmitter {
         socket.ID = `${new Date().getTime()}${Math.floor(Math.random() * 1000)}`;
         this.connections[socket.ID] = socket;
 
+        debug(`${socket.ID} connected`);
+
         socket.on('close', () => {
+            debug(`${socket.ID} disconnected`);
             delete this.connections[socket.ID];
 
             //Make pairing available again if necessary
@@ -109,6 +116,7 @@ export default class TCP extends EventEmitter {
         });
 
         socket.on('data', (data: Buffer) => {
+            debug(`${socket.ID} packet received`);
             if (socket.isEncrypted) {
                 socket.hasReceivedEncryptedData = true;
 
@@ -137,6 +145,7 @@ export default class TCP extends EventEmitter {
 
         socket.setTimeout(3600000); //1Hour
         socket.on('timeout', () => {
+            debug(`${socket.ID} timedout`);
             socket.emit('close');
         });
 
@@ -161,7 +170,7 @@ export default class TCP extends EventEmitter {
                 }
                 buffer = result;
             }
-
+            debug(`${socket.ID} packet sent`);
             socket.write(buffer);
         };
 
@@ -170,8 +179,8 @@ export default class TCP extends EventEmitter {
             socket.safeWrite(Buffer.from(body));
         };
 
-        socket.on('error', () => {
-
+        socket.on('error', (error: any) => {
+            debug(error);
         });
     }
 
@@ -218,6 +227,7 @@ export default class TCP extends EventEmitter {
         let connection = NET.createConnection(this.HTTPPort) as any;
 
         connection.on('connect', () => {
+            debug('New socked connected.');
             connection.isConnected = true;
             if (connection.pendingWirte) {
                 connection.safeWrite(connection.pendingWirte);
@@ -230,6 +240,7 @@ export default class TCP extends EventEmitter {
         });
 
         connection.on('close', () => {
+            debug(`Socked disconnected. Remained: ${this.TCPConnectionPool.length}`);
             this.TCPConnectionPool.splice(this.TCPConnectionPool.indexOf(connection), 1);
 
             connection.end();
@@ -239,6 +250,7 @@ export default class TCP extends EventEmitter {
         connection.setTimeout(0);
 
         connection.on('data', (data: Buffer) => {
+            debug(`Data received from HTTP.`);
             let currentLine = '',
                 prevs = Buffer.alloc(0),
                 rests = data;
@@ -265,9 +277,10 @@ export default class TCP extends EventEmitter {
 
         connection.safeWrite = (buffer: Buffer) => {
             connection.isBusy = true;
-            if (connection.isConnected)
+            if (connection.isConnected) {
+                debug(`Data sent to HTTP.`);
                 connection.write(buffer);
-            else {
+            } else {
                 connection.pendingWrite = connection.pendingWrite || Buffer.alloc(0);
                 connection.pendingWrite = Buffer.concat([connection.pendingWrite, buffer]);
             }
