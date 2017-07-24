@@ -23,6 +23,11 @@ export default function (server: HAS): express.Express {
 
     //Decode TLV request body if exists / Set real TCP socket
     app.use((req: any, res, next) => {
+
+        //TCP connection should stay open as lang as it wants to
+        req.socket.setTimeout(0);
+        req.socket.setKeepAlive(true, 1800000); //30 Minutes
+
         if (!req.headers['x-real-socket-id']) {
             res.end();
             return;

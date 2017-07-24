@@ -49,6 +49,8 @@ function default_1(server) {
     var _this = this;
     var app = express();
     app.use(function (req, res, next) {
+        req.socket.setTimeout(0);
+        req.socket.setKeepAlive(true, 1800000);
         if (!req.headers['x-real-socket-id']) {
             res.end();
             return;

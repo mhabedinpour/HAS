@@ -144,21 +144,24 @@ var TCP = (function (_super) {
         connection.on('connect', function () {
             debug('New socked connected.');
             connection.isConnected = true;
-            if (connection.pendingWirte) {
-                connection.safeWrite(connection.pendingWirte);
-                delete connection.pendingWirte;
+            if (connection.pendingWrite) {
+                connection.safeWrite(connection.pendingWrite);
+                delete connection.pendingWrite;
             }
         });
-        connection.on('error', function () {
+        connection.on('error', function (error) {
+            debug(error);
             connection.emit('close');
         });
         connection.on('close', function () {
-            debug("Socked disconnected. Remained: " + _this.TCPConnectionPool.length);
             _this.TCPConnectionPool.splice(_this.TCPConnectionPool.indexOf(connection), 1);
+            debug("Socked disconnected. Remained: " + _this.TCPConnectionPool.length);
             connection.end();
             connection.destroy();
         });
         connection.setTimeout(0);
+        connection.setKeepAlive(true, 1800000);
+        connection.setNoDelay(0);
         connection.on('data', function (data) {
             debug("Data received from HTTP.");
             var currentLine = '', prevs = Buffer.alloc(0), rests = data;

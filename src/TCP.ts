@@ -229,25 +229,32 @@ export default class TCP extends EventEmitter {
         connection.on('connect', () => {
             debug('New socked connected.');
             connection.isConnected = true;
-            if (connection.pendingWirte) {
-                connection.safeWrite(connection.pendingWirte);
-                delete connection.pendingWirte;
+            if (connection.pendingWrite) {
+                connection.safeWrite(connection.pendingWrite);
+                delete connection.pendingWrite;
             }
         });
 
-        connection.on('error', () => {
+        connection.on('error', (error: any) => {
+            debug(error);
+
             connection.emit('close');
         });
 
         connection.on('close', () => {
-            debug(`Socked disconnected. Remained: ${this.TCPConnectionPool.length}`);
             this.TCPConnectionPool.splice(this.TCPConnectionPool.indexOf(connection), 1);
+
+            debug(`Socked disconnected. Remained: ${this.TCPConnectionPool.length}`);
 
             connection.end();
             connection.destroy();
         });
 
+        //TCP connection should stay open as lang as it wants to
         connection.setTimeout(0);
+        connection.setKeepAlive(true, 1800000); //30 Minutes
+
+        connection.setNoDelay(0);
 
         connection.on('data', (data: Buffer) => {
             debug(`Data received from HTTP.`);

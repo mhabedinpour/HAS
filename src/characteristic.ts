@@ -258,6 +258,8 @@ export default class Characteristic {
     public setValue(value: any, checkValue: boolean = true) {
         if (!this.hasValue)
             return;
+        if (value === this.value)
+            return;
         if (!checkValue || this.isValid(value)) {
             this.value = value;
 

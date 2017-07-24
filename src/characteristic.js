@@ -61,6 +61,8 @@ var Characteristic = (function () {
         if (checkValue === void 0) { checkValue = true; }
         if (!this.hasValue)
             return;
+        if (value === this.value)
+            return;
         if (!checkValue || this.isValid(value)) {
             this.value = value;
             if (this.hasNotifications && this.subscribers.length && this.service && this.service.getAccessory() && this.service.getAccessory().getServer()) {
