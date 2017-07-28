@@ -5,6 +5,7 @@
  */
 
 import Config from './config';
+import * as OS from 'os';
 import * as HTTP from 'http';
 import expressApp from './express';
 import * as express from 'express';
@@ -145,6 +146,7 @@ export default class HAS {
                 type: 'hap',
                 port: this.config.TCPPort,
                 txt: this.config.getTXTRecords(),
+                host: OS.hostname().indexOf('.local') > -1 ? OS.hostname() : OS.hostname() + '.local' //Dirty fix for Bonjour module's bug on some devices
             });
             this.bonjourService.on('up', () => {
                 console.log('Bonjour is up');

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var OS = require("os");
 var HTTP = require("http");
 var express_1 = require("./express");
 var TCP_1 = require("./TCP");
@@ -51,6 +52,7 @@ var HAS = (function () {
                 type: 'hap',
                 port: this.config.TCPPort,
                 txt: this.config.getTXTRecords(),
+                host: OS.hostname().indexOf('.local') > -1 ? OS.hostname() : OS.hostname() + '.local'
             });
             this.bonjourService.on('up', function () {
                 console.log('Bonjour is up');
