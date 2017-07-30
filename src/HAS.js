@@ -5,8 +5,10 @@ var HTTP = require("http");
 var express_1 = require("./express");
 var TCP_1 = require("./TCP");
 var Bonjour = require('bonjour');
+var enableDestroy = require('server-destroy');
 var HAS = (function () {
     function HAS(config) {
+        var _this = this;
         this.accessories = {};
         this.isRunning = false;
         this.bonjour = Bonjour();
@@ -17,33 +19,60 @@ var HAS = (function () {
         this.config.setServer(this);
         this.expressApp = express_1.default(this);
         this.HTTPServer = HTTP.createServer(this.expressApp);
+        this.HTTPServer.on('listening', function () {
+            console.log("HTTP Server Listening on " + _this.HTTPServer.address().port);
+        });
+        enableDestroy(this.HTTPServer);
         this.TCPServer = new TCP_1.default(this);
+        this.TCPServer.on('listening', function () {
+            console.log("TCP Server Listening on " + _this.config.TCPPort);
+        });
     }
     HAS.prototype.startServer = function () {
-        var _this = this;
         if (Object.keys(this.accessories).length <= 0)
             throw new Error('Server must have at least one accessory.');
         this.config.increaseCCN(false);
         this.updateBonjour();
         this.HTTPServer.timeout = 0;
         this.HTTPServer.listen(0);
-        this.HTTPServer.on('listening', function () {
-            console.log("HTTP Server Listening on " + _this.HTTPServer.address().port);
-        });
         this.TCPServer.listen(this.config.TCPPort, this.HTTPServer.address().port);
-        this.TCPServer.on('listening', function () {
-            console.log("TCP Server Listening on " + _this.config.TCPPort);
-        });
         this.isRunning = true;
     };
-    HAS.prototype.stopServer = function () {
-        if (this.bonjourService)
-            this.bonjourService.stop();
+    HAS.prototype.stopServer = function (callback) {
+        var stopped = 0, finalCallback = function () {
+            if (stopped >= 3) {
+                if (callback)
+                    callback();
+            }
+        }, internalCallback = function () {
+            stopped++;
+            finalCallback();
+        };
+        if (this.bonjourService) {
+            this.bonjourService.stop(function () {
+                console.log('Bonjour Stopped.');
+                internalCallback();
+            });
+            this.bonjourService = null;
+        }
+        else
+            stopped++;
         if (this.HTTPServer)
-            this.HTTPServer.close();
+            this.HTTPServer.destroy(function () {
+                console.log('HTTP Stopped.');
+                internalCallback();
+            });
+        else
+            stopped++;
         if (this.TCPServer)
-            this.TCPServer.close();
+            this.TCPServer.close(function () {
+                console.log('TCP Stopped.');
+                internalCallback();
+            });
+        else
+            stopped++;
         this.isRunning = false;
+        finalCallback();
     };
     HAS.prototype.updateBonjour = function () {
         if (!this.bonjourService) {

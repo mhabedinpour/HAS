@@ -7,11 +7,11 @@ import {EventEmitter} from 'events';
 import * as NET from 'net';
 import HAS from './HAS';
 import * as ChaCha from './encryption/ChaCha20Poly1305AEAD';
+
 const ExtendedBuffer = require('extended-buffer');
-
 const delimiter = Buffer.from('\r\n');
-
 const debug = require('debug')('TCP');
+
 
 export default class TCP extends EventEmitter {
 
@@ -64,16 +64,6 @@ export default class TCP extends EventEmitter {
 
         this.TCPServer = NET.createServer();
         this.connections = [];
-    }
-
-    /**
-     * @method Starts the server
-     */
-    public listen(TCPPort: number, HTTPPort: number) {
-        this.TCPPort = TCPPort;
-        this.HTTPPort = HTTPPort;
-
-        this.TCPServer.listen(this.TCPPort);
 
         this.TCPServer.on('listening', () => {
             this.emit('listening', this.TCPPort);
@@ -86,6 +76,16 @@ export default class TCP extends EventEmitter {
         });
 
         this.TCPServer.on('connection', this.onConnection.bind(this));
+    }
+
+    /**
+     * @method Starts the server
+     */
+    public listen(TCPPort: number, HTTPPort: number) {
+        this.TCPPort = TCPPort;
+        this.HTTPPort = HTTPPort;
+
+        this.TCPServer.listen(this.TCPPort);
 
         for (let i = 0; i < this.TCPConnectionPoolMax; i++)
             this.createNewConnection();
@@ -316,13 +316,14 @@ export default class TCP extends EventEmitter {
     /**
      * @method Closes the server
      */
-    public close() {
-        this.connections = [];
-
-        this.TCPServer.close();
-
+    public close(callback?: () => void) {
         for (let connection of this.TCPConnectionPool)
             connection.emit('close');
+
+        this.TCPServer.close(callback);
+
+        for (let socketID in this.connections)
+            this.connections[socketID].emit('close');
     }
 
     /**

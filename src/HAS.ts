@@ -12,7 +12,15 @@ import * as express from 'express';
 import TCP from './TCP';
 import Accessory from './accessory';
 import {statusCodes} from './TLV/values';
+
 const Bonjour = require('bonjour');
+const enableDestroy = require('server-destroy');
+
+declare module 'http' {
+    interface Server {
+        destroy(callback?: () => void): void;
+    }
+}
 
 //HAP is using HTTP in it's own way. To meet its requirements and also not rewriting the whole HTTP module, We will create a TCP server which iOS will connect to it and we will do HAP stuffs in this layer.
 //We also will create an HTTP server which will process the iOS requests and generate response for them.
@@ -92,8 +100,15 @@ export default class HAS {
 
         this.expressApp = expressApp(this);
         this.HTTPServer = HTTP.createServer(this.expressApp);
+        this.HTTPServer.on('listening', () => {
+            console.log(`HTTP Server Listening on ${this.HTTPServer.address().port}`);
+        });
+        enableDestroy(this.HTTPServer);
 
         this.TCPServer = new TCP(this);
+        this.TCPServer.on('listening', () => {
+            console.log(`TCP Server Listening on ${this.config.TCPPort}`);
+        });
     }
 
     /**
@@ -109,14 +124,9 @@ export default class HAS {
 
         this.HTTPServer.timeout = 0; //TCP connection should stay open as lang as it wants to
         this.HTTPServer.listen(0);
-        this.HTTPServer.on('listening', () => {
-            console.log(`HTTP Server Listening on ${this.HTTPServer.address().port}`);
-        });
+
 
         this.TCPServer.listen(this.config.TCPPort, this.HTTPServer.address().port);
-        this.TCPServer.on('listening', () => {
-            console.log(`TCP Server Listening on ${this.config.TCPPort}`);
-        });
 
         this.isRunning = true;
     }
@@ -124,15 +134,48 @@ export default class HAS {
     /**
      * @method Stops HTTP, TCP and Bonjour
      */
-    public stopServer() {
-        if (this.bonjourService)
-            this.bonjourService.stop();
+    public stopServer(callback?: () => void) {
+        let stopped = 0,
+            finalCallback = () => {
+                if (stopped >= 3) {
+                    if (callback)
+                        callback();
+                }
+            },
+            internalCallback = () => {
+                stopped++;
+                finalCallback();
+            };
+
+        if (this.bonjourService) {
+            this.bonjourService.stop(() => {
+                console.log('Bonjour Stopped.');
+                internalCallback();
+            });
+            this.bonjourService = null;
+        } else
+            stopped++;
+
         if (this.HTTPServer)
-            this.HTTPServer.close();
+            this.HTTPServer.destroy(() => {
+                console.log('HTTP Stopped.');
+                internalCallback();
+            });
+        else
+            stopped++;
+
         if (this.TCPServer)
-            this.TCPServer.close();
+            this.TCPServer.close(() => {
+                console.log('TCP Stopped.');
+                internalCallback();
+            });
+        else
+            stopped++;
 
         this.isRunning = false;
+
+        //If nothing was started
+        finalCallback();
     }
 
     /**

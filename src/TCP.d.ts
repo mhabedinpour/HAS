@@ -19,7 +19,7 @@ export default class TCP extends EventEmitter {
     private hasExtraOpenConnection();
     private createNewConnection();
     private readAndDeleteFirstLineOfBuffer(buffer);
-    close(): void;
+    close(callback?: () => void): void;
     sendNotification(socketIDs: string[], notification: string): string[];
     revokeConnections(clientID: string): void;
 }

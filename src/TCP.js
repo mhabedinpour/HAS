@@ -26,22 +26,21 @@ var TCP = (function (_super) {
         _this.server = server;
         _this.TCPServer = NET.createServer();
         _this.connections = [];
-        return _this;
-    }
-    TCP.prototype.listen = function (TCPPort, HTTPPort) {
-        var _this = this;
-        this.TCPPort = TCPPort;
-        this.HTTPPort = HTTPPort;
-        this.TCPServer.listen(this.TCPPort);
-        this.TCPServer.on('listening', function () {
+        _this.TCPServer.on('listening', function () {
             _this.emit('listening', _this.TCPPort);
             debug('Listening on ' + _this.TCPPort);
         });
-        this.TCPServer.on('error', function (error) {
+        _this.TCPServer.on('error', function (error) {
             console.error(error);
             debug(error);
         });
-        this.TCPServer.on('connection', this.onConnection.bind(this));
+        _this.TCPServer.on('connection', _this.onConnection.bind(_this));
+        return _this;
+    }
+    TCP.prototype.listen = function (TCPPort, HTTPPort) {
+        this.TCPPort = TCPPort;
+        this.HTTPPort = HTTPPort;
+        this.TCPServer.listen(this.TCPPort);
         for (var i = 0; i < this.TCPConnectionPoolMax; i++)
             this.createNewConnection();
     };
@@ -207,13 +206,14 @@ var TCP = (function (_super) {
         }
         return { firstLine: firstLine, rest: buffer.slice(firstLine.length + delimiter.length) };
     };
-    TCP.prototype.close = function () {
-        this.connections = [];
-        this.TCPServer.close();
+    TCP.prototype.close = function (callback) {
         for (var _i = 0, _a = this.TCPConnectionPool; _i < _a.length; _i++) {
             var connection = _a[_i];
             connection.emit('close');
         }
+        this.TCPServer.close(callback);
+        for (var socketID in this.connections)
+            this.connections[socketID].emit('close');
     };
     TCP.prototype.sendNotification = function (socketIDs, notification) {
         var sent = [];

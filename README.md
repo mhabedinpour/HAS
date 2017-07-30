@@ -141,7 +141,7 @@ Methods:
 
 * `server.startServer()`: Starts the server.
 
-* `server.stopServer()`: Stops the server.
+* `server.stopServer(callback?)`: Stops the server.
 
 * `server.addAccessory(accessory)`: Adds an accessory to server.
 
