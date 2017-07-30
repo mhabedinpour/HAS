@@ -26,6 +26,7 @@ export default class Config {
     private pairings;
     publicKey: Buffer;
     privateKey: Buffer;
+    private UUIDMap;
     private server;
     constructor(deviceName: string, deviceID: string, category: number, configDir: string, TCPPort: number, setupCode: string);
     private readConfig();
@@ -37,4 +38,5 @@ export default class Config {
     removePairing(ID: Buffer): void;
     updatePairing(ID: Buffer, isAdmin: boolean): void;
     getPairings(ID?: Buffer): Pairing | Pairings | boolean;
+    getHASID(UUID: string): number;
 }

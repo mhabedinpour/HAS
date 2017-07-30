@@ -12,6 +12,7 @@ var Config = (function () {
         this.statusFlag = 0x01;
         this.failedAuthCounter = 0;
         this.pairings = {};
+        this.UUIDMap = {};
         if (deviceName)
             this.deviceName = deviceName;
         else
@@ -55,6 +56,8 @@ var Config = (function () {
                 this.publicKey = Buffer.from(config.publicKey, 'hex');
             if (config.privateKey)
                 this.privateKey = Buffer.from(config.privateKey, 'hex');
+            if (config.UUIDMap)
+                this.UUIDMap = config.UUIDMap;
         }
         else
             throw new Error('Invalid Config File');
@@ -70,7 +73,8 @@ var Config = (function () {
             CCN: this.CCN,
             pairings: this.pairings,
             publicKey: this.publicKey.toString('hex'),
-            privateKey: this.privateKey.toString('hex')
+            privateKey: this.privateKey.toString('hex'),
+            UUIDMap: this.UUIDMap
         }), 'utf8');
     };
     Config.prototype.setServer = function (server) {
@@ -142,6 +146,19 @@ var Config = (function () {
         }
         else
             return this.pairings;
+    };
+    Config.prototype.getHASID = function (UUID) {
+        UUID = UUID.toString().toUpperCase();
+        if (this.UUIDMap[UUID])
+            return this.UUIDMap[UUID];
+        var values = [0];
+        for (var UUID_1 in this.UUIDMap)
+            values.push(this.UUIDMap[UUID_1]);
+        var lastID = Math.max.apply(Math, values);
+        lastID++;
+        this.UUIDMap[UUID] = lastID;
+        this.writeConfig();
+        return lastID;
     };
     return Config;
 }());

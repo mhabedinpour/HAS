@@ -127,6 +127,10 @@ Parameters:
 
 * `setupCode` (string) Accessory setup code(User will use this code for pairing).
 
+Methods:
+
+* `config.getHASID(UUID): number`: Maps UUID to persistent unique integer.
+
 **Server**
 
 ```js

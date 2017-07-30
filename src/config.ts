@@ -7,6 +7,7 @@
 import * as FS from 'fs';
 import SRP from './encryption/SRP';
 import * as crypto from 'crypto';
+
 const Ed25519 = require('ed25519');
 import HAS from './HAS';
 
@@ -143,6 +144,13 @@ export default class Config {
     public privateKey: Buffer;
 
     /**
+     * @property Maps UUID to HAS ID
+     * @private
+     * @type {{}}
+     */
+    private UUIDMap: { [index: string]: number } = {};
+
+    /**
      * @property An instance to this object's server
      * @private
      */
@@ -202,6 +210,9 @@ export default class Config {
                 this.publicKey = Buffer.from(config.publicKey, 'hex');
             if (config.privateKey)
                 this.privateKey = Buffer.from(config.privateKey, 'hex');
+
+            if (config.UUIDMap)
+                this.UUIDMap = config.UUIDMap;
         } else
             throw new Error('Invalid Config File');
     }
@@ -222,7 +233,8 @@ export default class Config {
             CCN: this.CCN,
             pairings: this.pairings,
             publicKey: this.publicKey.toString('hex'),
-            privateKey: this.privateKey.toString('hex')
+            privateKey: this.privateKey.toString('hex'),
+            UUIDMap: this.UUIDMap
         }), 'utf8');
     }
 
@@ -346,5 +358,30 @@ export default class Config {
             return this.pairings[IDString];
         } else
             return this.pairings;
+    }
+
+    /**
+     * @method Maps UUID to HAS ID
+     * @param {string} UUID
+     * @returns {number}
+     */
+    public getHASID(UUID: string): number {
+        UUID = UUID.toString().toUpperCase();
+
+        if (this.UUIDMap[UUID])
+            return this.UUIDMap[UUID];
+
+        let values = [0];
+
+        for (let UUID in this.UUIDMap)
+            values.push(this.UUIDMap[UUID]);
+
+        let lastID = Math.max(...values);
+        lastID++;
+
+        this.UUIDMap[UUID] = lastID;
+        this.writeConfig();
+
+        return lastID;
     }
 }
