@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { EventEmitter } from 'events';
 import HAS from './HAS';
 export default class TCP extends EventEmitter {
