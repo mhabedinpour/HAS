@@ -4,7 +4,6 @@ npm-debug.log*
 #PHPStorm
 .idea/*.*
 
-
 # Dependency directories
 node_modules/
 
@@ -19,9 +18,3 @@ samples/*.json
 
 #HAP Specification
 HAP-Specification-Non-Commercial-Version.pdf
-
-#Compiled JS Files
-*.js
-
-#Definition Files
-*.d.ts
