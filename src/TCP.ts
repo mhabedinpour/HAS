@@ -263,11 +263,9 @@ export default class TCP extends EventEmitter {
             if (veryFirstLine.toString().indexOf('HTTP') > -1) {
                 let socketID = '',
                     contentLength = '0',
-                    headers = Buffer.alloc(0),
-                    rests = data;
+                    headers = veryFirstLine,
+                    rests = rest;
 
-                rests = rest;
-                headers = veryFirstLine;
                 while (true) {
                     let {firstLine, rest} = this.readAndDeleteFirstLineOfBuffer(rests);
                     let currentLine = firstLine.toString('utf8');
