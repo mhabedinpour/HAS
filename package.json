@@ -52,7 +52,7 @@
     "debug": "^2.6.9",
     "ed25519": "0.0.4",
     "express": "^4.16.0",
-    "extended-buffer": "^0.4.2",
+    "extended-buffer": "^4.0.1",
     "jsbn": "^1.1.0",
     "server-destroy": "^1.0.1"
   }
