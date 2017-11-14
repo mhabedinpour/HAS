@@ -189,9 +189,14 @@ export default class TCP extends EventEmitter {
      * @param framesCounter
      */
     private createNonce(framesCounter: number): Buffer {
-        let buffer = new ExtendedBuffer();
-        buffer.writeUInt64LE(framesCounter);
-        return Buffer.concat([Buffer.alloc(4), buffer.buffer]);
+        // Return native buffer
+        // The new version of the library significantly improved performance, and the library is covered with tests
+        return (new ExtendedBuffer({
+                maxBufferLength: 12
+            }))
+            .writeBuffer(Buffer.alloc(4))
+            .writeUIntLE(framesCounter, 8)
+            .readBuffer(12, true);
     }
 
     /**
