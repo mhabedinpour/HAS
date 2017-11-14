@@ -6,11 +6,18 @@
 
 import * as HAS from '../';
 
-let config = new HAS.Config('NodeJS Light', '42:E6:B6:63:BC:2C', HAS.categories.lightBulb, __dirname + '/light.json', 8093, '200-20-200');
+let config = new HAS.Config('NodeJS Light2', '42:E6:B6:63:BC:2C', HAS.categories.lightBulb, __dirname + '/light.json', 8093, '200-20-200');
 
 let server = new HAS.Server(config);
 
 let light = new HAS.Accessory(1);
+
+
+console.log(config.getHASID('salam'));
+console.log(config.getHASID('salam2'));
+console.log(config.resetHASID('salam'));
+console.log(config.getHASID('salam'));
+
 
 let lightIdentify = HAS.predefined.Identify(1, undefined, (value, callback) => {
         console.log('Light Identify', value);
