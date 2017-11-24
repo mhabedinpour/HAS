@@ -1,12 +1,12 @@
 {
   "name": "has-node",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Homekit Accessory Server",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run build && npm run watch",
-    "serve": "nodemon --ignore 'samples/*.json' -L samples/lightbulb.js",
+    "serve": "nodemon --ignore 'samples/*.json' -L samples/fan.js",
     "build": "npm run build-ts",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve\"",
     "build-ts": "tsc",
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "body-parser": "^1.18.2",
-    "bonjour": "^3.5.0",
+    "bonjour": "github:abedinpour/bonjour",
     "chacha-native": "^2.0.2",
     "curve25519-n2": "^1.1.3",
     "debug": "^2.6.9",
