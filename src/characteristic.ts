@@ -11,7 +11,7 @@ export type ValueFormat = 'bool' | 'uint8' | 'uint16' | 'uint32' | 'int' | 'floa
 export type ValueUnit = 'celsius' | 'percentage' | 'arcdegrees' | 'lux' | 'seconds';
 export type OnWrite = (value: any, callback: (status: statusCodes) => void, authData?: Buffer) => void;
 
-const defaultRanges: {[index: string]: number[]} = {
+const defaultRanges: { [index: string]: number[] } = {
     int: [-2147483648, 2147483647],
     uint8: [0, 255],
     uint32: [0, 4294967295],
@@ -275,7 +275,7 @@ export default class Characteristic {
                     characteristics: [{
                         aid: this.service.getAccessory().getID(),
                         iid: this.service.getAccessory().getIID(this.service.getID(), this.ID),
-                        value: this.value
+                        value: this.getValue()
                     }]
                 }));
             }
@@ -287,8 +287,23 @@ export default class Characteristic {
      * @method Returns the value of this characteristic
      * @returns {any}
      */
-    public getValue(): any {
-        return this.value;
+    public getValue(parse: Boolean = true): any {
+        if (!parse)
+            return this.value;
+        let value;
+        if (this.hasValue) {
+            if (this.isNumeric())
+                value = this.valueFormat == 'float' ? parseFloat(this.value || 0) : parseInt(this.value || 0);
+            else if (this.valueFormat == 'bool')
+                value = this.value == 1;
+            else if (this.isBuffer())
+                value = this.value ? this.value.toString('base64') : '';
+            else
+                value = (this.value || '').toString();
+        } else
+            value = null;
+
+        return value;
     }
 
     /**
@@ -383,7 +398,7 @@ export default class Characteristic {
                 else
                     value = value.toString();
                 if (this.onWrite) {
-                    let timeout = setTimeout(function () {
+                    const timeout = setTimeout(function () {
                         reject(statusCodes.timedout);
                     }, 10000);
                     this.onWrite(value, (status) => {
@@ -413,7 +428,7 @@ export default class Characteristic {
      * @returns {string[]}
      */
     public getPermissions(): string[] {
-        let permissions: string[] = [];
+        const permissions: string[] = [];
         if (this.hasValue)
             permissions.push('pr');
         if (!this.isReadonly)
@@ -433,7 +448,7 @@ export default class Characteristic {
      * @returns {{[p: string]: any}}
      */
     public getMetadata(): { [index: string]: any } {
-        let object: { [index: string]: any } = {};
+        const object: { [index: string]: any } = {};
 
         object['format'] = this.valueFormat;
 
@@ -466,9 +481,9 @@ export default class Characteristic {
      * @param object
      */
     public addMetadata(object: any) {
-        let metadata = this.getMetadata();
+        const metadata = this.getMetadata();
 
-        for (let index in metadata)
+        for (const index in metadata)
             object[index] = metadata[index];
     }
 
@@ -477,21 +492,9 @@ export default class Characteristic {
      * @returns {{[p: string]: any}}
      */
     public toJSON(): {} {
-        let value;
-        if (this.hasValue) {
-            if (this.isNumeric())
-                value = this.valueFormat == 'float' ? parseFloat(this.value || 0) : parseInt(this.value || 0);
-            else if (this.valueFormat == 'bool')
-                value = this.value == 1;
-            else if (this.isBuffer())
-                value = this.value ? this.value.toString('base64') : '';
-            else
-                value = (this.value || '').toString();
-        } else
-            value = null;
+        const value = this.getValue();
 
-
-        var object: { [index: string]: any } = {
+        const object: { [index: string]: any } = {
             type: this.type,
             iid: this.ID,
             perms: this.getPermissions(),
