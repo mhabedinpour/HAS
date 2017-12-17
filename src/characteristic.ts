@@ -267,6 +267,7 @@ export default class Characteristic {
             return;
         if (value === this.value)
             return;
+        value = this.prepareValue(value);
         if (!checkValue || this.isValid(value)) {
             this.value = value;
 
@@ -280,7 +281,7 @@ export default class Characteristic {
                 }));
             }
         } else
-            throw new Error('Invalid Value: ' + value.toString());
+            throw new Error('Invalid Value: ' + value);
     }
 
     /**
@@ -293,9 +294,9 @@ export default class Characteristic {
         let value;
         if (this.hasValue) {
             if (this.isNumeric())
-                value = this.valueFormat == 'float' ? parseFloat(this.value || 0) : parseInt(this.value || 0);
+                value = this.valueFormat == 'float' ? parseFloat(this.value || this.getIntDefaultValue()) || this.getIntDefaultValue() : parseInt(this.value || 0) || 0;
             else if (this.valueFormat == 'bool')
-                value = this.value == 1;
+                value = this.value >= 1;
             else if (this.isBuffer())
                 value = this.value ? this.value.toString('base64') : '';
             else
@@ -378,25 +379,57 @@ export default class Characteristic {
     }
 
     /**
+     * @method Returns a default value for integers based on conditions
+     * @returns {number}
+     */
+    private getIntDefaultValue(): number {
+        let defaultValue = 0;
+
+        if (this.minValue)
+            defaultValue = this.minValue;
+        else if (this.validValues)
+            defaultValue = this.validValues[0];
+        else if (this.validRangeValues)
+            defaultValue = this.validRangeValues[0];
+
+        return defaultValue;
+    }
+
+    /**
+     * @method Prepares a value to be stored
+     * @param value
+     * @returns {any}
+     */
+    private prepareValue(value: any): any {
+        if (value === null || value == undefined)
+            return value;
+
+        let finalValue;
+        if (this.isNumeric())
+            finalValue = parseFloat(value || this.getIntDefaultValue()) || this.getIntDefaultValue();
+        else if (this.valueFormat == 'bool')
+            finalValue = value >= 1;
+        else if (this.isBuffer())
+            finalValue = Buffer.isBuffer(value) ? value : Buffer.from(value || '', 'base64');
+        else
+            finalValue = (value || '').toString();
+
+        return finalValue;
+    }
+
+    /**
      * @method Writes value of this characteristic
      * @param value
      * @returns {Promise<T>}
      */
     public writeValue(value: any, authData: string): Promise<number> {
         return new Promise((resolve, reject) => {
+            value = this.prepareValue(value);
             if (this.isValid(value)) {
                 if (this.isReadonly) {
                     reject(statusCodes.isReadonly);
                     return;
                 }
-                if (this.isNumeric())
-                    value = parseFloat(value);
-                else if (this.valueFormat == 'bool')
-                    value = value == 1;
-                else if (this.isBuffer())
-                    value = Buffer.from(value, 'base64');
-                else
-                    value = value.toString();
                 if (this.onWrite) {
                     const timeout = setTimeout(function () {
                         reject(statusCodes.timedout);
