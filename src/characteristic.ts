@@ -294,7 +294,7 @@ export default class Characteristic {
         let value;
         if (this.hasValue) {
             if (this.isNumeric())
-                value = this.valueFormat == 'float' ? parseFloat(this.value || this.getIntDefaultValue()) || this.getIntDefaultValue() : parseInt(this.value || 0) || 0;
+                value = this.valueFormat == 'float' ? parseFloat(this.value || this.getIntDefaultValue()) || this.getIntDefaultValue() : parseInt(this.value || this.getIntDefaultValue()) || this.getIntDefaultValue();
             else if (this.valueFormat == 'bool')
                 value = this.value >= 1;
             else if (this.isBuffer())
