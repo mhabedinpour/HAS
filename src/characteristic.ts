@@ -364,7 +364,10 @@ export default class Characteristic {
 
             const range = this.validRangeValues || defaultRanges[this.valueFormat];
 
-            if (range && (this.value < range[0] || this.value > range[1]))
+            if (range && (value < range[0] || value > range[1]))
+                return false;
+
+            if (this.stepValue && value % this.stepValue !== 0)
                 return false;
         } else {
 
