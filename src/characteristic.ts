@@ -294,7 +294,7 @@ export default class Characteristic {
         let value;
         if (this.hasValue) {
             if (this.isNumeric())
-                value = this.valueFormat == 'float' ? parseFloat(this.value || this.getIntDefaultValue()) || this.getIntDefaultValue() : parseInt(this.value || this.getIntDefaultValue()) || this.getIntDefaultValue();
+                value = this.valueFormat == 'float' ? this.getIntDefaultValue(parseFloat(this.value)) : this.getIntDefaultValue(parseInt(this.value));
             else if (this.valueFormat == 'bool')
                 value = this.value >= 1;
             else if (this.isBuffer())
@@ -383,7 +383,7 @@ export default class Characteristic {
 
     /**
      * @method Calculates remainder
-     * @param {number} val
+     * @param {number} value
      * @param {number} step
      * @returns {number}
      */
@@ -398,10 +398,14 @@ export default class Characteristic {
     }
 
     /**
-     * @method Returns a default value for integers based on conditions
+     * @method Returns default value for integers if required
+     * @param {number} value
      * @returns {number}
      */
-    private getIntDefaultValue(): number {
+    private getIntDefaultValue(value: number): number {
+        if (value !== null && value !== undefined && !isNaN(value))
+            return value;
+
         let defaultValue = 0;
 
         if (this.minValue)
@@ -425,7 +429,7 @@ export default class Characteristic {
 
         let finalValue;
         if (this.isNumeric())
-            finalValue = parseFloat(value || this.getIntDefaultValue()) || this.getIntDefaultValue();
+            finalValue = this.getIntDefaultValue(parseFloat(value));
         else if (this.valueFormat == 'bool')
             finalValue = value >= 1;
         else if (this.isBuffer())
