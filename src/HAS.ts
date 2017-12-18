@@ -200,9 +200,7 @@ export default class HAS {
             });
         } else {
             // Update existing server TXT records
-            this.bonjourService.txt = this.config.getTXTRecords();
-            this.bonjour._server.unregister(this.bonjourService._records());
-            this.bonjour._server.register(this.bonjourService._records());
+            this.bonjourService.updateTxt(this.config.getTXTRecords());
         }
     }
 

@@ -1,6 +1,6 @@
 {
   "name": "has-node",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "Homekit Accessory Server",
   "main": "app.js",
   "scripts": {
@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "body-parser": "^1.18.2",
-    "bonjour": "github:abedinpour/bonjour",
+    "bonjour": "github:abedinpour/bonjour#refactoring_and_update_txt_support",
     "chacha-native": "^2.0.2",
     "curve25519-n2": "^1.1.3",
     "debug": "^2.6.9",
