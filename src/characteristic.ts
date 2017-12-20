@@ -261,12 +261,14 @@ export default class Characteristic {
     /**
      * @method Sets the value of this characteristic
      * @param value
+     * @param {boolean} checkValue
+     * @returns {boolean}
      */
-    public setValue(value: any, checkValue: boolean = true) {
+    public setValue(value: any, checkValue: boolean = true): boolean {
         if (!this.hasValue)
-            return;
+            return false;
         if (value === this.value)
-            return;
+            return true;
         value = this.prepareValue(value);
         if (!checkValue || this.isValid(value)) {
             this.value = value;
@@ -280,15 +282,20 @@ export default class Characteristic {
                     }]
                 }));
             }
-        } else
-            throw new Error('Invalid Value: ' + value);
+
+            return true;
+        } else {
+            console.error('Invalid Value', value);
+            return false;
+        }
     }
 
     /**
      * @method Returns the value of this characteristic
+     * @param {boolean} parse
      * @returns {any}
      */
-    public getValue(parse: Boolean = true): any {
+    public getValue(parse: boolean = true): any {
         if (!parse)
             return this.value;
         let value;
