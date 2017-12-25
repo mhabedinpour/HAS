@@ -269,8 +269,8 @@ export default class Characteristic {
             return false;
         if (value === this.value)
             return true;
-        value = this.prepareValue(value);
         if (!checkValue || this.isValid(value)) {
+            value = this.prepareValue(value);
             this.value = value;
 
             if (this.hasNotifications && this.subscribers.length && this.service && this.service.getAccessory() && this.service.getAccessory().getServer()) {
@@ -395,7 +395,10 @@ export default class Characteristic {
      * @returns {number}
      */
     // https://stackoverflow.com/questions/3966484/why-does-modulus-operator-return-fractional-number-in-javascript
-    private floatSafeRemainder(value: number, step: number): number {
+    private floatSafeRemainder(value: any, step: number): number {
+        value = parseFloat(value);
+        if (isNaN(value))
+            return 1;
         const valDecCount = (value.toString().split('.')[1] || '').length;
         const stepDecCount = (step.toString().split('.')[1] || '').length;
         const decCount = valDecCount > stepDecCount ? valDecCount : stepDecCount;
