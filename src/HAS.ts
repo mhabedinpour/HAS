@@ -213,8 +213,8 @@ export default class HAS {
         if (accessoryID < 1 || accessoryID > 999)
             throw new Error('Accessory ID can not be less than 1 or more than 999: ' + accessoryID);
 
-        if (Object.keys(this.accessories).length >= 100)
-            throw new Error('Server can not have more than 100 accessories: ' + accessoryID);
+        if (Object.keys(this.accessories).length >= 150)
+            throw new Error('Server can not have more than 150 accessories: ' + accessoryID);
 
         if (Object.keys(accessory.getServices()).length <= 0)
             throw new Error('Accessory must contain at least one service: ' + accessoryID);

@@ -1,12 +1,12 @@
 {
   "name": "has-node",
-  "version": "0.4.10",
+  "version": "0.4.11",
   "description": "Homekit Accessory Server",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run build && npm run watch",
-    "serve": "nodemon --ignore 'samples/*.json' -L samples/fan.js",
+    "serve": "nodemon --ignore 'samples/*.json' -L samples/bridge.js",
     "build": "npm run tslint && npm run build-ts",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve\"",
     "build-ts": "tsc",
