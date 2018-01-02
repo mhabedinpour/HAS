@@ -102,9 +102,6 @@ export default class TCP extends EventEmitter {
         debug(`${socket.ID} connected`);
 
         socket.on('close', () => {
-            if (!socket)
-                return;
-
             debug(`${socket.ID} disconnected`);
             delete this.connections[socket.ID];
 
@@ -116,14 +113,9 @@ export default class TCP extends EventEmitter {
 
             socket.end();
             socket.destroy();
-
-            socket = null;
         });
 
         socket.on('data', (data: Buffer) => {
-            if (!socket)
-                return;
-
             debug(`${socket.ID} packet received`);
             if (socket.isEncrypted) {
                 socket.hasReceivedEncryptedData = true;
@@ -161,18 +153,12 @@ export default class TCP extends EventEmitter {
         });
 
         socket.keepAliveForEver = () => {
-            if (!socket)
-                return;
-
             socket.setTimeout(0);
 
             socket.setKeepAlive(true, 1800000); // 30Minutes
         };
 
         socket.safeWrite = (buffer: Buffer) => {
-            if (!socket)
-                return;
-
             if (socket.hasReceivedEncryptedData) { // Since we are dealing with async code, isEncrypted is set first but our last write in M6 will happen after that and we should not encrypt M6, So we will start encryption after we have received encrypted data from client
                 // console.log(buffer.toString('ascii'));
                 let result = Buffer.alloc(0);
@@ -192,17 +178,11 @@ export default class TCP extends EventEmitter {
         };
 
         socket.sendNotification = (notification: string) => {
-            if (!socket)
-                return;
-
             const body = `EVENT/1.0 200 OK${delimiter}Content-Type: application/hap+json${delimiter}Content-Length: ${notification.length}${delimiter}${delimiter}${notification}`;
             socket.safeWrite(Buffer.from(body));
         };
 
         socket.on('error', (error: any) => {
-            if (!socket)
-                return;
-
             debug(error);
         });
     }
@@ -247,9 +227,6 @@ export default class TCP extends EventEmitter {
         const connection = NET.createConnection(this.HTTPPort) as any;
 
         connection.on('connect', () => {
-            if (!connection)
-                return;
-
             debug('New socked connected.');
             connection.isConnected = true;
             if (connection.pendingWrite) {
@@ -259,26 +236,18 @@ export default class TCP extends EventEmitter {
         });
 
         connection.on('error', (error: any) => {
-            if (!connection)
-                return;
-
             debug(error);
 
             connection.emit('close');
         });
 
         connection.on('close', () => {
-            if (!connection)
-                return;
-
             this.TCPConnectionPool.splice(this.TCPConnectionPool.indexOf(connection), 1);
 
             debug(`Socked disconnected. Remained: ${this.TCPConnectionPool.length}`);
 
             connection.end();
             connection.destroy();
-
-            connection = null;
         });
 
         // TCP connection should stay open as lang as it wants to
@@ -288,9 +257,6 @@ export default class TCP extends EventEmitter {
         connection.setNoDelay(0);
 
         connection.on('data', (data: Buffer) => {
-            if (!connection)
-                return;
-
             debug(`Data received from HTTP.`);
             // Handle Multipart Responses
             const {firstLine: veryFirstLine, rest} = this.readAndDeleteFirstLineOfBuffer(data, !!connection.pendingRead);
@@ -336,9 +302,6 @@ export default class TCP extends EventEmitter {
         });
 
         connection.safeWrite = (buffer: Buffer) => {
-            if (!connection)
-                return;
-
             connection.isBusy = true;
             if (connection.isConnected) {
                 debug(`Data sent to HTTP.`);
