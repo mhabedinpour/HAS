@@ -102,6 +102,9 @@ export default class TCP extends EventEmitter {
         debug(`${socket.ID} connected`);
 
         socket.on('close', () => {
+            if (!socket)
+                return;
+
             debug(`${socket.ID} disconnected`);
             delete this.connections[socket.ID];
 
@@ -113,9 +116,14 @@ export default class TCP extends EventEmitter {
 
             socket.end();
             socket.destroy();
+
+            socket = null;
         });
 
         socket.on('data', (data: Buffer) => {
+            if (!socket)
+                return;
+
             debug(`${socket.ID} packet received`);
             if (socket.isEncrypted) {
                 socket.hasReceivedEncryptedData = true;
@@ -145,17 +153,26 @@ export default class TCP extends EventEmitter {
 
         socket.setTimeout(3600000); // 1Hour
         socket.on('timeout', () => {
+            if (!socket)
+                return;
+
             debug(`${socket.ID} timedout`);
             socket.emit('close');
         });
 
         socket.keepAliveForEver = () => {
+            if (!socket)
+                return;
+
             socket.setTimeout(0);
 
             socket.setKeepAlive(true, 1800000); // 30Minutes
         };
 
         socket.safeWrite = (buffer: Buffer) => {
+            if (!socket)
+                return;
+
             if (socket.hasReceivedEncryptedData) { // Since we are dealing with async code, isEncrypted is set first but our last write in M6 will happen after that and we should not encrypt M6, So we will start encryption after we have received encrypted data from client
                 // console.log(buffer.toString('ascii'));
                 let result = Buffer.alloc(0);
@@ -175,11 +192,17 @@ export default class TCP extends EventEmitter {
         };
 
         socket.sendNotification = (notification: string) => {
+            if (!socket)
+                return;
+
             const body = `EVENT/1.0 200 OK${delimiter}Content-Type: application/hap+json${delimiter}Content-Length: ${notification.length}${delimiter}${delimiter}${notification}`;
             socket.safeWrite(Buffer.from(body));
         };
 
         socket.on('error', (error: any) => {
+            if (!socket)
+                return;
+
             debug(error);
         });
     }
@@ -214,10 +237,7 @@ export default class TCP extends EventEmitter {
      * @method Whether or not we have a TCP connection which we can close it
      */
     private hasExtraOpenConnection(): boolean {
-        if (this.TCPConnectionPool.length > this.TCPConnectionPoolMax && this.TCPConnectionPool.filter(connection => !connection.isBusy).length >= 1)
-            return true;
-
-        return false;
+        return this.TCPConnectionPool.length > this.TCPConnectionPoolMax && this.TCPConnectionPool.filter(connection => !connection.isBusy).length >= 1;
     }
 
     /**
@@ -227,27 +247,38 @@ export default class TCP extends EventEmitter {
         const connection = NET.createConnection(this.HTTPPort) as any;
 
         connection.on('connect', () => {
+            if (!connection)
+                return;
+
             debug('New socked connected.');
             connection.isConnected = true;
             if (connection.pendingWrite) {
                 connection.safeWrite(connection.pendingWrite);
-                delete connection.pendingWrite;
+                connection.pendingWrite = null;
             }
         });
 
         connection.on('error', (error: any) => {
+            if (!connection)
+                return;
+
             debug(error);
 
             connection.emit('close');
         });
 
         connection.on('close', () => {
+            if (!connection)
+                return;
+
             this.TCPConnectionPool.splice(this.TCPConnectionPool.indexOf(connection), 1);
 
             debug(`Socked disconnected. Remained: ${this.TCPConnectionPool.length}`);
 
             connection.end();
             connection.destroy();
+
+            connection = null;
         });
 
         // TCP connection should stay open as lang as it wants to
@@ -257,9 +288,12 @@ export default class TCP extends EventEmitter {
         connection.setNoDelay(0);
 
         connection.on('data', (data: Buffer) => {
+            if (!connection)
+                return;
+
             debug(`Data received from HTTP.`);
             // Handle Multipart Responses
-            const {firstLine: veryFirstLine, rest} = this.readAndDeleteFirstLineOfBuffer(data);
+            const {firstLine: veryFirstLine, rest} = this.readAndDeleteFirstLineOfBuffer(data, !!connection.pendingRead);
             if (veryFirstLine.toString().indexOf('HTTP') > -1) {
                 let socketID = '',
                     contentLength = '0',
@@ -292,6 +326,8 @@ export default class TCP extends EventEmitter {
                 if (this.connections[connection.pendingRead.socketID])
                     this.connections[connection.pendingRead.socketID].safeWrite(Buffer.concat([connection.pendingRead.headers, delimiter, connection.pendingRead.body]));
 
+                connection.pendingRead = null;
+
                 connection.isBusy = false;
 
                 if (this.hasExtraOpenConnection())
@@ -300,6 +336,9 @@ export default class TCP extends EventEmitter {
         });
 
         connection.safeWrite = (buffer: Buffer) => {
+            if (!connection)
+                return;
+
             connection.isBusy = true;
             if (connection.isConnected) {
                 debug(`Data sent to HTTP.`);
@@ -319,15 +358,33 @@ export default class TCP extends EventEmitter {
      * @param buffer
      * @returns {{firstLine: Buffer, rest: Buffer}}
      */
-    private readAndDeleteFirstLineOfBuffer(buffer: Buffer): { firstLine: Buffer, rest: Buffer } {
-        let firstLine = Buffer.alloc(0);
+    private readAndDeleteFirstLineOfBuffer(buffer: Buffer, mayNotBeHTTP: boolean = false): { firstLine: Buffer, rest: Buffer } {
+        if (mayNotBeHTTP) {
+            const possibleHTTPMethod = buffer.slice(0, 10).toString('ascii').toUpperCase();
+            let isHTTP = false;
+            ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS', 'CONNECT', 'PATCH', 'TRACE'].forEach(item => {
+                if (possibleHTTPMethod.indexOf(item) > -1) {
+                    isHTTP = true;
+                    return false;
+                }
+            });
+            if (!isHTTP)
+                return {
+                    firstLine: buffer,
+                    rest: Buffer.alloc(0)
+                };
+        }
+        let firstLineLastIndex = 0;
         for (let index = 0; index < buffer.length; index++) {
             if (buffer[index] == delimiter[0] && buffer[index + 1] == delimiter[1])
                 break;
             else
-                firstLine = Buffer.concat([firstLine, buffer.slice(index, index + 1)]);
+                firstLineLastIndex++;
         }
-        return {firstLine: firstLine, rest: buffer.slice(firstLine.length + delimiter.length)};
+        return {
+            firstLine: buffer.slice(0, firstLineLastIndex),
+            rest: buffer.slice(firstLineLastIndex + delimiter.length)
+        };
     }
 
     /**

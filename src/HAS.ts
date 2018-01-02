@@ -5,7 +5,6 @@
  */
 
 import Config from './config';
-import * as OS from 'os';
 import * as HTTP from 'http';
 import expressApp from './express';
 import * as express from 'express';
