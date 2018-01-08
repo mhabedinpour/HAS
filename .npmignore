@@ -17,6 +17,7 @@ node_modules/
 samples/*.json
 
 samples/test.js
+samples/test2.js
 
 #HAP Specification
 HAP-Specification-Non-Commercial-Version.pdf
