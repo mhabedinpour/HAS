@@ -1093,8 +1093,11 @@ export function AccessoryInformation(ID: number, characteristics: Characteristic
     const requiredCharacteristics = ['00000014-0000-1000-8000-0026BB765291', '00000020-0000-1000-8000-0026BB765291', '00000021-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291', '00000030-0000-1000-8000-0026BB765291', '00000052-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000053-0000-1000-8000-0026BB765291', '000000A6-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1126,8 +1129,11 @@ export function AirPurifier(ID: number, characteristics: Characteristic[], isHid
     const requiredCharacteristics = ['000000B0-0000-1000-8000-0026BB765291', '000000A9-0000-1000-8000-0026BB765291', '000000A8-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['000000A7-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291', '000000B6-0000-1000-8000-0026BB765291', '00000029-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1159,8 +1165,11 @@ export function AirQualitySensor(ID: number, characteristics: Characteristic[], 
     const requiredCharacteristics = ['00000095-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000075-0000-1000-8000-0026BB765291', '00000077-0000-1000-8000-0026BB765291', '0000007A-0000-1000-8000-0026BB765291', '00000079-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291', '000000C3-0000-1000-8000-0026BB765291', '000000C4-0000-1000-8000-0026BB765291', '000000C5-0000-1000-8000-0026BB765291', '000000C6-0000-1000-8000-0026BB765291', '000000C7-0000-1000-8000-0026BB765291', '000000C8-0000-1000-8000-0026BB765291', '00000090-0000-1000-8000-0026BB765291', '00000093-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1192,8 +1201,11 @@ export function BatteryService(ID: number, characteristics: Characteristic[], is
     const requiredCharacteristics = ['00000068-0000-1000-8000-0026BB765291', '0000008F-0000-1000-8000-0026BB765291', '00000079-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1225,8 +1237,11 @@ export function CameraRTPStreamManagement(ID: number, characteristics: Character
     const requiredCharacteristics = ['00000114-0000-1000-8000-0026BB765291', '00000115-0000-1000-8000-0026BB765291', '00000116-0000-1000-8000-0026BB765291', '00000117-0000-1000-8000-0026BB765291', '00000120-0000-1000-8000-0026BB765291', '00000118-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1258,8 +1273,11 @@ export function CarbonDioxideSensor(ID: number, characteristics: Characteristic[
     const requiredCharacteristics = ['00000092-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000075-0000-1000-8000-0026BB765291', '00000077-0000-1000-8000-0026BB765291', '00000079-0000-1000-8000-0026BB765291', '0000007A-0000-1000-8000-0026BB765291', '00000093-0000-1000-8000-0026BB765291', '00000094-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1291,8 +1309,11 @@ export function CarbonMonoxideSensor(ID: number, characteristics: Characteristic
     const requiredCharacteristics = ['00000069-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000075-0000-1000-8000-0026BB765291', '00000077-0000-1000-8000-0026BB765291', '00000079-0000-1000-8000-0026BB765291', '0000007A-0000-1000-8000-0026BB765291', '00000090-0000-1000-8000-0026BB765291', '00000091-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1324,8 +1345,11 @@ export function ContactSensor(ID: number, characteristics: Characteristic[], isH
     const requiredCharacteristics = ['0000006A-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000075-0000-1000-8000-0026BB765291', '00000077-0000-1000-8000-0026BB765291', '0000007A-0000-1000-8000-0026BB765291', '00000079-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1357,8 +1381,11 @@ export function Door(ID: number, characteristics: Characteristic[], isHidden: bo
     const requiredCharacteristics = ['0000006D-0000-1000-8000-0026BB765291', '00000072-0000-1000-8000-0026BB765291', '0000007C-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['0000006F-0000-1000-8000-0026BB765291', '00000024-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1390,8 +1417,11 @@ export function Doorbell(ID: number, characteristics: Characteristic[], isHidden
     const requiredCharacteristics = ['00000073-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000008-0000-1000-8000-0026BB765291', '00000119-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1423,8 +1453,11 @@ export function Fan(ID: number, characteristics: Characteristic[], isHidden: boo
     const requiredCharacteristics = ['00000025-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000028-0000-1000-8000-0026BB765291', '00000029-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1456,8 +1489,11 @@ export function Fanv2(ID: number, characteristics: Characteristic[], isHidden: b
     const requiredCharacteristics = ['000000B0-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['000000AF-0000-1000-8000-0026BB765291', '000000BF-0000-1000-8000-0026BB765291', '000000A7-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291', '00000028-0000-1000-8000-0026BB765291', '00000029-0000-1000-8000-0026BB765291', '000000B6-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1489,8 +1525,11 @@ export function FilterMaintenance(ID: number, characteristics: Characteristic[],
     const requiredCharacteristics = ['000000AC-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['000000AB-0000-1000-8000-0026BB765291', '000000AD-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1522,8 +1561,11 @@ export function GarageDoorOpener(ID: number, characteristics: Characteristic[], 
     const requiredCharacteristics = ['0000000E-0000-1000-8000-0026BB765291', '00000032-0000-1000-8000-0026BB765291', '00000024-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['0000001D-0000-1000-8000-0026BB765291', '0000001E-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1555,8 +1597,11 @@ export function HeaterCooler(ID: number, characteristics: Characteristic[], isHi
     const requiredCharacteristics = ['000000B0-0000-1000-8000-0026BB765291', '000000B1-0000-1000-8000-0026BB765291', '000000B2-0000-1000-8000-0026BB765291', '00000011-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['000000A7-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291', '000000B6-0000-1000-8000-0026BB765291', '0000000D-0000-1000-8000-0026BB765291', '00000012-0000-1000-8000-0026BB765291', '00000036-0000-1000-8000-0026BB765291', '00000029-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1588,8 +1633,11 @@ export function HumidifierDehumidifier(ID: number, characteristics: Characterist
     const requiredCharacteristics = ['00000010-0000-1000-8000-0026BB765291', '000000B3-0000-1000-8000-0026BB765291', '000000B4-0000-1000-8000-0026BB765291', '000000B0-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['000000A7-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291', '000000B6-0000-1000-8000-0026BB765291', '000000B5-0000-1000-8000-0026BB765291', '000000C9-0000-1000-8000-0026BB765291', '000000CA-0000-1000-8000-0026BB765291', '00000029-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1621,8 +1669,11 @@ export function HumiditySensor(ID: number, characteristics: Characteristic[], is
     const requiredCharacteristics = ['00000010-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000075-0000-1000-8000-0026BB765291', '00000077-0000-1000-8000-0026BB765291', '0000007A-0000-1000-8000-0026BB765291', '00000079-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1654,8 +1705,11 @@ export function LeakSensor(ID: number, characteristics: Characteristic[], isHidd
     const requiredCharacteristics = ['00000070-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000075-0000-1000-8000-0026BB765291', '00000077-0000-1000-8000-0026BB765291', '0000007A-0000-1000-8000-0026BB765291', '00000079-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1687,8 +1741,11 @@ export function LightSensor(ID: number, characteristics: Characteristic[], isHid
     const requiredCharacteristics = ['0000006B-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000075-0000-1000-8000-0026BB765291', '00000077-0000-1000-8000-0026BB765291', '0000007A-0000-1000-8000-0026BB765291', '00000079-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1720,8 +1777,11 @@ export function Lightbulb(ID: number, characteristics: Characteristic[], isHidde
     const requiredCharacteristics = ['00000025-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000008-0000-1000-8000-0026BB765291', '00000013-0000-1000-8000-0026BB765291', '0000002F-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291', '000000CE-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1753,8 +1813,11 @@ export function LockManagement(ID: number, characteristics: Characteristic[], is
     const requiredCharacteristics = ['00000019-0000-1000-8000-0026BB765291', '00000037-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['0000001F-0000-1000-8000-0026BB765291', '00000005-0000-1000-8000-0026BB765291', '0000001A-0000-1000-8000-0026BB765291', '00000001-0000-1000-8000-0026BB765291', '0000001C-0000-1000-8000-0026BB765291', '0000000E-0000-1000-8000-0026BB765291', '00000022-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1786,8 +1849,11 @@ export function LockMechanism(ID: number, characteristics: Characteristic[], isH
     const requiredCharacteristics = ['0000001D-0000-1000-8000-0026BB765291', '0000001E-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1819,8 +1885,11 @@ export function Microphone(ID: number, characteristics: Characteristic[], isHidd
     const requiredCharacteristics = ['0000011A-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000119-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1852,8 +1921,11 @@ export function MotionSensor(ID: number, characteristics: Characteristic[], isHi
     const requiredCharacteristics = ['00000022-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000075-0000-1000-8000-0026BB765291', '00000077-0000-1000-8000-0026BB765291', '0000007A-0000-1000-8000-0026BB765291', '00000079-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1885,8 +1957,11 @@ export function OccupancySensor(ID: number, characteristics: Characteristic[], i
     const requiredCharacteristics = ['00000071-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000075-0000-1000-8000-0026BB765291', '00000077-0000-1000-8000-0026BB765291', '0000007A-0000-1000-8000-0026BB765291', '00000079-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1918,8 +1993,11 @@ export function Outlet(ID: number, characteristics: Characteristic[], isHidden: 
     const requiredCharacteristics = ['00000025-0000-1000-8000-0026BB765291', '00000026-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1951,8 +2029,11 @@ export function SecuritySystem(ID: number, characteristics: Characteristic[], is
     const requiredCharacteristics = ['00000066-0000-1000-8000-0026BB765291', '00000067-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000077-0000-1000-8000-0026BB765291', '0000007A-0000-1000-8000-0026BB765291', '0000008E-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -1984,8 +2065,11 @@ export function ServiceLabel(ID: number, characteristics: Characteristic[], isHi
     const requiredCharacteristics = ['000000CD-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -2017,8 +2101,11 @@ export function Slat(ID: number, characteristics: Characteristic[], isHidden: bo
     const requiredCharacteristics = ['000000C0-0000-1000-8000-0026BB765291', '000000AA-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000023-0000-1000-8000-0026BB765291', '000000C1-0000-1000-8000-0026BB765291', '000000C2-0000-1000-8000-0026BB765291', '000000B6-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -2050,8 +2137,11 @@ export function SmokeSensor(ID: number, characteristics: Characteristic[], isHid
     const requiredCharacteristics = ['00000076-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000075-0000-1000-8000-0026BB765291', '00000077-0000-1000-8000-0026BB765291', '0000007A-0000-1000-8000-0026BB765291', '00000079-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -2083,8 +2173,11 @@ export function Speaker(ID: number, characteristics: Characteristic[], isHidden:
     const requiredCharacteristics = ['0000011A-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000119-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -2116,8 +2209,11 @@ export function StatelessProgrammableSwitch(ID: number, characteristics: Charact
     const requiredCharacteristics = ['00000073-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000023-0000-1000-8000-0026BB765291', '000000CB-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -2149,8 +2245,11 @@ export function Switch(ID: number, characteristics: Characteristic[], isHidden: 
     const requiredCharacteristics = ['00000025-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -2182,8 +2281,11 @@ export function TemperatureSensor(ID: number, characteristics: Characteristic[],
     const requiredCharacteristics = ['00000011-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000075-0000-1000-8000-0026BB765291', '00000077-0000-1000-8000-0026BB765291', '00000079-0000-1000-8000-0026BB765291', '0000007A-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -2215,8 +2317,11 @@ export function Thermostat(ID: number, characteristics: Characteristic[], isHidd
     const requiredCharacteristics = ['0000000F-0000-1000-8000-0026BB765291', '00000033-0000-1000-8000-0026BB765291', '00000011-0000-1000-8000-0026BB765291', '00000035-0000-1000-8000-0026BB765291', '00000036-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['00000010-0000-1000-8000-0026BB765291', '00000034-0000-1000-8000-0026BB765291', '0000000D-0000-1000-8000-0026BB765291', '00000012-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -2248,8 +2353,11 @@ export function Window(ID: number, characteristics: Characteristic[], isHidden: 
     const requiredCharacteristics = ['0000006D-0000-1000-8000-0026BB765291', '0000007C-0000-1000-8000-0026BB765291', '00000072-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['0000006F-0000-1000-8000-0026BB765291', '00000024-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;
@@ -2281,8 +2389,11 @@ export function WindowCovering(ID: number, characteristics: Characteristic[], is
     const requiredCharacteristics = ['0000006D-0000-1000-8000-0026BB765291', '0000007C-0000-1000-8000-0026BB765291', '00000072-0000-1000-8000-0026BB765291'];
     const optionalCharacteristics = ['0000006F-0000-1000-8000-0026BB765291', '0000007B-0000-1000-8000-0026BB765291', '0000007D-0000-1000-8000-0026BB765291', '0000006C-0000-1000-8000-0026BB765291', '0000006E-0000-1000-8000-0026BB765291', '00000024-0000-1000-8000-0026BB765291', '00000023-0000-1000-8000-0026BB765291'];
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (const characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (const type of requiredCharacteristics) {
         let OK = false;

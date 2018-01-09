@@ -71,8 +71,11 @@ for (const service of data.Services) {
     let requiredCharacteristics = ${undefinedOrArray(service.RequiredCharacteristics, true)};
     let optionalCharacteristics = ${undefinedOrArray(service.OptionalCharacteristics, true)};
     
-    if (!checkCharacteristics)
+    if (!checkCharacteristics) {
+        for (let characteristic of characteristics)
+            service.addCharacteristic(characteristic);
         return service;
+    }
     
     for (let type of requiredCharacteristics) {
         let OK = false;
