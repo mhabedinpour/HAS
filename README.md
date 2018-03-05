@@ -56,6 +56,10 @@ server.startServer();
 
 _Check out [samples folder](https://github.com/abedinpour/HAS/tree/master/samples) for more samples._
 
+# Plugins
+
+* [sprut666666/new-types-for-homekit](https://github.com/sprut666666/new-types-for-homekit): Additional predefined types for HAS
+
 # API
 
 **Categories**
