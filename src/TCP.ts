@@ -351,7 +351,7 @@ export default class TCP extends EventEmitter {
     }
 
     /**
-     * @methdo Splits header value
+     * @method Splits header value
      * @param {string} header
      * @returns {any}
      */
