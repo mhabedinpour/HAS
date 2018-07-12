@@ -88,7 +88,7 @@ for (const service of data.Services) {
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (let characteristic of characteristics) {
