@@ -1,6 +1,6 @@
 {
   "name": "has-node",
-  "version": "0.4.13",
+  "version": "0.4.14",
   "description": "Homekit Accessory Server",
   "main": "app.js",
   "scripts": {
@@ -54,7 +54,7 @@
     "debug": "^3.1.0",
     "ed25519": "0.0.4",
     "express": "^4.16.2",
-    "extended-buffer": "^4.0.1",
+    "extended-buffer": "^4.0.5",
     "jsbn": "^1.1.0",
     "server-destroy": "^1.0.1"
   }

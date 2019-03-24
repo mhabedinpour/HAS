@@ -194,7 +194,7 @@ export default class TCP extends EventEmitter {
     private createNonce(framesCounter: number): Buffer {
         return (new ExtendedBuffer({
             maxBufferLength: 12
-        })).writeBuffer(Buffer.alloc(4)).writeUIntLE(framesCounter, 8).readBuffer(12, true);
+        })).writeBuffer(Buffer.alloc(4)).writeUIntLE(framesCounter, 6).writeBuffer(Buffer.alloc(2)).readBuffer(12, true);
     }
 
     /**
