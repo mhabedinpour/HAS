@@ -1110,7 +1110,7 @@ export function AccessoryInformation(ID: number, characteristics: Characteristic
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1146,7 +1146,7 @@ export function AirPurifier(ID: number, characteristics: Characteristic[], isHid
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1182,7 +1182,7 @@ export function AirQualitySensor(ID: number, characteristics: Characteristic[], 
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1218,7 +1218,7 @@ export function BatteryService(ID: number, characteristics: Characteristic[], is
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1254,7 +1254,7 @@ export function CameraRTPStreamManagement(ID: number, characteristics: Character
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1290,7 +1290,7 @@ export function CarbonDioxideSensor(ID: number, characteristics: Characteristic[
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1326,7 +1326,7 @@ export function CarbonMonoxideSensor(ID: number, characteristics: Characteristic
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1362,7 +1362,7 @@ export function ContactSensor(ID: number, characteristics: Characteristic[], isH
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1398,7 +1398,7 @@ export function Door(ID: number, characteristics: Characteristic[], isHidden: bo
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1434,7 +1434,7 @@ export function Doorbell(ID: number, characteristics: Characteristic[], isHidden
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1470,7 +1470,7 @@ export function Fan(ID: number, characteristics: Characteristic[], isHidden: boo
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1506,7 +1506,7 @@ export function Fanv2(ID: number, characteristics: Characteristic[], isHidden: b
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1542,7 +1542,7 @@ export function FilterMaintenance(ID: number, characteristics: Characteristic[],
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1578,7 +1578,7 @@ export function GarageDoorOpener(ID: number, characteristics: Characteristic[], 
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1614,7 +1614,7 @@ export function HeaterCooler(ID: number, characteristics: Characteristic[], isHi
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1650,7 +1650,7 @@ export function HumidifierDehumidifier(ID: number, characteristics: Characterist
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1686,7 +1686,7 @@ export function HumiditySensor(ID: number, characteristics: Characteristic[], is
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1722,7 +1722,7 @@ export function LeakSensor(ID: number, characteristics: Characteristic[], isHidd
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1758,7 +1758,7 @@ export function LightSensor(ID: number, characteristics: Characteristic[], isHid
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1794,7 +1794,7 @@ export function Lightbulb(ID: number, characteristics: Characteristic[], isHidde
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1830,7 +1830,7 @@ export function LockManagement(ID: number, characteristics: Characteristic[], is
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1866,7 +1866,7 @@ export function LockMechanism(ID: number, characteristics: Characteristic[], isH
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1902,7 +1902,7 @@ export function Microphone(ID: number, characteristics: Characteristic[], isHidd
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1938,7 +1938,7 @@ export function MotionSensor(ID: number, characteristics: Characteristic[], isHi
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -1974,7 +1974,7 @@ export function OccupancySensor(ID: number, characteristics: Characteristic[], i
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -2010,7 +2010,7 @@ export function Outlet(ID: number, characteristics: Characteristic[], isHidden: 
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -2046,7 +2046,7 @@ export function SecuritySystem(ID: number, characteristics: Characteristic[], is
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -2082,7 +2082,7 @@ export function ServiceLabel(ID: number, characteristics: Characteristic[], isHi
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -2118,7 +2118,7 @@ export function Slat(ID: number, characteristics: Characteristic[], isHidden: bo
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -2154,7 +2154,7 @@ export function SmokeSensor(ID: number, characteristics: Characteristic[], isHid
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -2190,7 +2190,7 @@ export function Speaker(ID: number, characteristics: Characteristic[], isHidden:
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -2226,7 +2226,7 @@ export function StatelessProgrammableSwitch(ID: number, characteristics: Charact
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -2262,7 +2262,7 @@ export function Switch(ID: number, characteristics: Characteristic[], isHidden: 
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -2298,7 +2298,7 @@ export function TemperatureSensor(ID: number, characteristics: Characteristic[],
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -2334,7 +2334,7 @@ export function Thermostat(ID: number, characteristics: Characteristic[], isHidd
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -2370,7 +2370,7 @@ export function Window(ID: number, characteristics: Characteristic[], isHidden: 
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
@@ -2406,7 +2406,7 @@ export function WindowCovering(ID: number, characteristics: Characteristic[], is
         }
         
         if (!OK)
-            throw new Error(type + 'is required for this service: ' + ID);
+            throw new Error(type + ' is required for this service: ' + ID);
     }
     
     for (const characteristic of characteristics) {
